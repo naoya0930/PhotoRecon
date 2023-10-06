@@ -1,3 +1,10 @@
+# meta data
+.DS_Store
+
+# yolo file
+yolo/
+*.ptl
+
 # Gradle files
 .gradle/
 build/

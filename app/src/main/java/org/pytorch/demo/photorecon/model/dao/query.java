@@ -1,9 +1,13 @@
 package org.pytorch.demo.photorecon.model.dao;
 
 
+import java.util.List;
+
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmObject;
+import io.realm.RealmQuery;
+import io.realm.RealmResults;
 
 // データベース（主にSQLite）にクエリを投げてレコードを取得し、エンティティに変換するクラス。
 // もちろんその逆（データベースへのWrite）も行います。
@@ -30,26 +34,31 @@ abstract class query<T extends RealmObject>{
     protected void create_entity(RealmConfiguration conf,T obj){
         Realm.setDefaultConfiguration(conf);
         Realm realm_instance = Realm.getDefaultInstance();
-        // トランザクション中に書く!
-        realm_instance.copyToRealm(obj);
+        realm_instance.executeTransaction(r -> {
+            r.copyToRealm(obj);
+        });
         realm_instance.close();
 
     }
-
-    protected List<T> read_all_entity(RealmConfiguration conf){
+    // RealmQueryを実行する．
+    protected List<T> read_entity(RealmConfiguration conf,RealmQuery q){
         Realm.setDefaultConfiguration(conf);
         Realm realm_instance = Realm.getDefaultInstance();
-//
-//        realm_instance.copyToRealm(obj);
-//        realm_instance.close();
+        // RealmQuery<T> searchTaskQuery = realm_instance.where(T.class);
+        RealmResults<T> list = q.findAll();
+        realm_instance.close();
+        // Listに戻すが，後段の処理が遅い場合は，realmListの使用を検討
+        return new List<T>(list);
     }
-    private void Update_entity(){
-//        Realm realm_instance = Realm.getDefaultInstance();
-//
-//        realm_instance.copytoRealmOrUpdate(obj);
-//        realm_instance.close();
+    private void update_entity(RealmConfiguration conf){
+        Realm.setDefaultConfiguration(conf);
+        Realm realm_instance = Realm.getDefaultInstance();
+        realm_instance.executeTransaction(r -> {
+            r.copyToRealmOrUpdate(obj);
+        });
+       realm_instance.close();
     }
-    private void Delete_entity(){}
+    private void delete_entity(){}
 
 
 }

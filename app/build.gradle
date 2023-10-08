@@ -12,7 +12,7 @@ android {
     buildToolsVersion '30.0.3'
 
     defaultConfig {
-        applicationId "org.pytorch.demo.PhotoRecon"
+        applicationId "com.photorecon.app.naoPhotoRecon"
         minSdkVersion 28
         targetSdkVersion 31
         versionCode 1

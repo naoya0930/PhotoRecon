@@ -1,6 +1,7 @@
 package org.pytorch.demo.photorecon.model.dao;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
@@ -45,12 +46,14 @@ abstract class query<T extends RealmObject>{
         Realm.setDefaultConfiguration(conf);
         Realm realm_instance = Realm.getDefaultInstance();
         // RealmQuery<T> searchTaskQuery = realm_instance.where(T.class);
-        RealmResults<T> list = q.findAll();
+        RealmResults<T> result = q.findAll();
         realm_instance.close();
         // Listに戻すが，後段の処理が遅い場合は，realmListの使用を検討
-        return new List<T>(list);
+        List<T> rtv = new ArrayList<T>();
+        rtv.addAll(result.subList(0, result.size()));
+        return rtv;
     }
-    private void update_entity(RealmConfiguration conf){
+    private void update_entity(RealmConfiguration conf, T obj){
         Realm.setDefaultConfiguration(conf);
         Realm realm_instance = Realm.getDefaultInstance();
         realm_instance.executeTransaction(r -> {
@@ -58,7 +61,18 @@ abstract class query<T extends RealmObject>{
         });
        realm_instance.close();
     }
-    private void delete_entity(){}
+    private void delete_entity(RealmConfiguration conf,RealmQuery q){
+        Realm.setDefaultConfiguration(conf);
+        Realm realm_instance = Realm.getDefaultInstance();
+        realm_instance.executeTransaction(r->{
+            RealmResults<T> list = q.findAll();
+            for(T t:list){
+                // 遅い気がする．もう少しいい実装がありそう
+                t.deleteFromRealm();
+            }
+        });
+        realm_instance.close();
+    }
 
 
 }

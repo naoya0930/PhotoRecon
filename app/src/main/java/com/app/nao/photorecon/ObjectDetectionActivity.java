@@ -1,4 +1,4 @@
-package org.pytorch.demo.photorecon;
+package com.app.nao.photorecon;
 
 import android.content.Intent;
 import android.graphics.Bitmap;

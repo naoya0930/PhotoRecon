@@ -1,4 +1,4 @@
-package org.pytorch.demo.photorecon.model.entity;
+package com.app.nao.photorecon.model.entity;
 
 import io.realm.RealmList;
 import io.realm.RealmObject;
@@ -12,7 +12,8 @@ public class Photo extends RealmObject {
     // unique ID
     @PrimaryKey private ObjectId id;
     // source image local uri
-    @Required private String uri;
+    
+     private String uri;
     // recognized image list
     private RealmList<SegmentedPhoto> recon_list;
     // model name forwarded by

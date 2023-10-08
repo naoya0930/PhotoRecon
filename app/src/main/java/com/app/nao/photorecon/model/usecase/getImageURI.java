@@ -1,6 +1,6 @@
-package org.pytorch.demo.photorecon.model.usecase;
+package com.app.nao.photorecon.model.usecase;
 
-import org.pytorch.demo.photorecon.model.entity.*;
+import com.app.nao.photorecon.model.entity.*;
 //entityに対するやってはいけないことを制限するために書く，
 // 特定の形でgetさせないなど
 // ほとんどはエラーハンドリングのみ？

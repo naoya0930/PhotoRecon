@@ -1,4 +1,4 @@
-package org.pytorch.demo.photorecon.model.entity;
+package com.app.nao.photorecon.model.entity;
 
 import java.util.Date;
 

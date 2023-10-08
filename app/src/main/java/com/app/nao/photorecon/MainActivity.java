@@ -1,10 +1,4 @@
-// Copyright (c) 2020 Facebook, Inc. and its affiliates.
-// All rights reserved.
-//
-// This source code is licensed under the BSD-style license found in the
-// LICENSE file in the root directory of this source tree.
-
-package org.pytorch.demo.photorecon;
+package com.app.nao.photorecon;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -53,7 +47,6 @@ import io.realm.RealmConfiguration;
 public class MainActivity extends AppCompatActivity implements Runnable {
     private int mImageIndex = 0;
     private String[] mTestImages = {"test1.png", "test2.jpg", "test3.png"};
-
     private ImageView mImageView;
     private ResultView mResultView;
     private Button mButtonDetect;
@@ -122,114 +115,34 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         Log.v("EXAMPLE","Successfully opened the default realm at: " + realm_instance.getPath());
         realm_instance.close();
 
-        //
-        final Button buttonTest = findViewById(R.id.testButton);
-        buttonTest.setText(("Test Image 1/3"));
-        buttonTest.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mResultView.setVisibility(View.INVISIBLE);
-                mImageIndex = (mImageIndex + 1) % mTestImages.length;
-                buttonTest.setText(String.format("Text Image %d/%d", mImageIndex + 1, mTestImages.length));
-
-                try {
-                    mBitmap = BitmapFactory.decodeStream(getAssets().open(mTestImages[mImageIndex]));
-                    mImageView.setImageBitmap(mBitmap);
-                } catch (IOException e) {
-                    Log.e("Object Detection", "Error reading assets", e);
-                    finish();
-                }
-            }
-        });
-
-        final Button buttonSelectModel = findViewById(R.id.selectModelButton);
-        buttonSelectModel.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mResultView.setVisibility(View.INVISIBLE);
-                AssetManager assetManager = getResources().getAssets();
-                String[] assetList =null;
-                try {
-                    assetList = assetManager.list("");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                List<CharSequence> modelFileList =new ArrayList<>();
-                    for (String modelName : assetList)
-                        if (modelName.endsWith(".ptl"))
-                            modelFileList.add(modelName);
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Select Model");
-                CharSequence[] options = modelFileList.toArray(new CharSequence[modelFileList.size()]);
-                builder.setSingleChoiceItems(options, 0, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        mPtlFileName = options[whichButton];
-                        updateModel();
-                    }
-                });
-                builder.show();
-            }
-        });
-
-        final Button buttonSelect = findViewById(R.id.selectButton);
-        buttonSelect.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mResultView.setVisibility(View.INVISIBLE);
-
-                final CharSequence[] options = { "Choose from Photos", "Take Picture", "Cancel" };
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("New Test Image");
-
-                builder.setItems(options, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int item) {
-                        if (options[item].equals("Take Picture")) {
-                            Intent takePicture = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                            startActivityForResult(takePicture, 0);
-                        }
-                        else if (options[item].equals("Choose from Photos")) {
-                            Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-                            startActivityForResult(pickPhoto , 1);
-                        }
-                        else if (options[item].equals("Cancel")) {
-                            dialog.dismiss();
-                        }
-                    }
-                });
-                builder.show();
-            }
-        });
-
-        final Button buttonLive = findViewById(R.id.liveButton);
+        // @string: 写真を取る
+        final Button buttonLive = findViewById(R.id.activeCameraButton);
         buttonLive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-              final Intent intent = new Intent(MainActivity.this, ObjectDetectionActivity.class);
-              intent.putExtra("KEY_MODEL_NAME_CHARSEQUENCE",mPtlFileName);
-              startActivity(intent);
+
             }
         });
-
-        mButtonDetect = findViewById(R.id.detectButton);
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
-        mButtonDetect.setOnClickListener(new View.OnClickListener() {
+        final Button buttonActiveAlbum = findViewById(R.id.activeAlbumButton);
+        buttonActiveAlbum.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mButtonDetect.setEnabled(false);
-                mProgressBar.setVisibility(ProgressBar.VISIBLE);
-                mButtonDetect.setText(getString(R.string.run_model));
 
-                mImgScaleX = (float)mBitmap.getWidth() / PrePostProcessor.mInputWidth;
-                mImgScaleY = (float)mBitmap.getHeight() / PrePostProcessor.mInputHeight;
-
-                mIvScaleX = (mBitmap.getWidth() > mBitmap.getHeight() ? (float)mImageView.getWidth() / mBitmap.getWidth() : (float)mImageView.getHeight() / mBitmap.getHeight());
-                mIvScaleY  = (mBitmap.getHeight() > mBitmap.getWidth() ? (float)mImageView.getHeight() / mBitmap.getHeight() : (float)mImageView.getWidth() / mBitmap.getWidth());
-
-                mStartX = (mImageView.getWidth() - mIvScaleX * mBitmap.getWidth())/2;
-                mStartY = (mImageView.getHeight() -  mIvScaleY * mBitmap.getHeight())/2;
-
-                Thread thread = new Thread(MainActivity.this);
-                thread.start();
             }
         });
+        final Button buttonResisterPhoto = findViewById(R.id.registerPhotoButton);
+        buttonResisterPhoto.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+            }
+        });
+        final Button buttonBackup = findViewById(R.id.backupButton);
+        buttonBackup.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+            }
+        });
+
+
+        //初期化
         try {
             mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), mPtlFileName.toString()));
             BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));

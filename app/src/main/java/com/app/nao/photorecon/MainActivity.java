@@ -1,11 +1,14 @@
 package com.app.nao.photorecon;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,6 +19,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.content.Intent;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -119,19 +123,45 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         final Button buttonLive = findViewById(R.id.activeCameraButton);
         buttonLive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
+                //オリジナルの写真アプリに各種追加．
             }
         });
         final Button buttonActiveAlbum = findViewById(R.id.activeAlbumButton);
         buttonActiveAlbum.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                //アルバム起動
+                //これは別のインテントで
+            }
+        });
+        final Button buttonSelectPhoto = findViewById(R.id.selectPhotoButton);
+        buttonSelectPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //写真を選択させる．intent起動
+                Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+                activityResultLauncher.launch(pickPhoto);
+                //インメモリに情報を保持する．
+                //結果をresultviewに表示
+                /*
+                Button button = findViewById(R.id.button);
+                back.setOnClickListener(v -> {
+                    Intent intent = new Intent(context, SubActivity.class);
+                    intent.putExtras(bundle);
+                    activityResultLauncher.launch(intent);
+                    finish();
+
+
+                });
+                */
 
             }
         });
+
         final Button buttonResisterPhoto = findViewById(R.id.registerPhotoButton);
         buttonResisterPhoto.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
+            //インメモリの情報をDBに登録する
+            // 成功，失敗の結果をイベント通知
             }
         });
         final Button buttonBackup = findViewById(R.id.backupButton);
@@ -140,7 +170,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
             }
         });
-
 
         //初期化
         try {
@@ -175,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             finish();
         }
     }
-
+    // activityResultLauncher.launchを使用するため，これは使わない
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -214,7 +243,37 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
         }
     }
+    private final ActivityResultLauncher<Intent> activityResultLauncher =
+                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                    // requestCode, resultCode, data
+                if(result.getResultCode() !=RESULT_CANCELED) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        if (result.getData() != null) {
+                            //結果を受け取った後の処理
+                            Uri selectedImage = result.getData().getData();
+                            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                            if (selectedImage != null) {
+                                Cursor cursor = getContentResolver().query(selectedImage,
+                                        filePathColumn, null, null, null);
+                                if (cursor != null) {
+                                    cursor.moveToFirst();
+                                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                                    String picturePath = cursor.getString(columnIndex);
+                                    mBitmap = BitmapFactory.decodeFile(picturePath);
+                                    Matrix matrix = new Matrix();
+                                    matrix.postRotate(0.0f);
+                                    mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), mBitmap.getHeight(), matrix, true);
+                                    mImageView.setImageBitmap(mBitmap);
+                                    cursor.close();
+                                }
+                            }
+                        } else {
 
+                        }
+                    }
+                }
+            });
     @Override
     public void run() {
         Bitmap resizedBitmap = Bitmap.createScaledBitmap(mBitmap, PrePostProcessor.mInputWidth, PrePostProcessor.mInputHeight, true);

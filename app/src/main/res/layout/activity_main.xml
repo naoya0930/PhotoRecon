@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.pytorch.demo.photorecon.MainActivity">
+    tools:context="com.app.nao.photorecon.MainActivity">
 
     <ImageView
         android:id="@+id/imageView"
@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <org.pytorch.demo.photorecon.ResultView
+    <com.app.nao.photorecon.ResultView
         android:id="@+id/resultView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -29,11 +29,11 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/detectButton"
+        android:id="@+id/activeCameraButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="@string/detect"
+        android:text="@string/activeCamera"
         android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -53,49 +53,52 @@
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
     <Button
-        android:id="@+id/testButton"
+        android:id="@+id/activeAlbumButton"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
+        android:text="@string/activeAlbum"
         android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/selectButton"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintEnd_toStartOf="@+id/imageView"
+        app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/detectButton" />
+        app:layout_constraintTop_toBottomOf="@+id/activeCameraButton" />
 
     <Button
-        android:id="@+id/selectButton"
+        android:id="@+id/registerPhotoButton"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:text="@string/select"
+        android:text="@string/registerPhoto"
         android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/liveButton"
+        app:layout_constraintEnd_toStartOf="@+id/backupButton"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/testButton"
-        app:layout_constraintTop_toTopOf="@+id/testButton" />
+        app:layout_constraintStart_toEndOf="@+id/activeAlbumButton"
+        app:layout_constraintTop_toTopOf="@+id/activeAlbumButton" />
 
     <Button
-        android:id="@+id/liveButton"
+        android:id="@+id/backupButton"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:text="@string/live"
+        android:text="@string/backup"
         android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/selectButton"
-        app:layout_constraintTop_toTopOf="@+id/selectButton" />
+        app:layout_constraintStart_toEndOf="@+id/registerPhotoButton"
+        app:layout_constraintTop_toTopOf="@+id/registerPhotoButton" />
 
     <Button
-        android:id="@+id/selectModelButton"
+        android:id="@+id/selectPhotoButton"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:text="@string/model"
+        android:layout_marginTop="72dp"
+        android:text="@string/selectPhoto"
         android:textAllCaps="false"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/detectButton"
-        app:layout_constraintTop_toTopOf="@+id/detectButton" />
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/registerPhotoButton"
+        app:layout_constraintTop_toTopOf="@+id/registerPhotoButton" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -12,4 +12,5 @@
     <string name="activeAlbum">アルバムを見る</string>
     <string name="registerPhoto">写真を登録する</string>
     <string name="backup">バックアップ</string>
+    <string name="selectPhoto">写真を選択する</string>
 </resources>

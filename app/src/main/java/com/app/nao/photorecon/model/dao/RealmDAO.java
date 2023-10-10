@@ -1,4 +1,4 @@
-package com.app.nao.photorecon.dao;
+package com.app.nao.photorecon.model.dao;
 
 
 import java.util.ArrayList;
@@ -13,10 +13,10 @@ import io.realm.RealmResults;
 // データベース（主にSQLite）にクエリを投げてレコードを取得し、エンティティに変換するクラス。
 // もちろんその逆（データベースへのWrite）も行います。
 
-abstract class query<T extends RealmObject>{
+public abstract class RealmDAO<T extends RealmObject>{
     //インメモリへの転送と，DBファイルへの反映も書きたい
 
-    protected RealmConfiguration InmemoryRealmConf =
+    protected RealmConfiguration inmemoryRealmConf =
         new RealmConfiguration.Builder()
             .name("PhotoReconApp")
             .allowQueriesOnUiThread(true)

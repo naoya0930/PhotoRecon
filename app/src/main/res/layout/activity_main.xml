@@ -100,5 +100,16 @@
         app:layout_constraintStart_toEndOf="@+id/registerPhotoButton"
         app:layout_constraintTop_toTopOf="@+id/registerPhotoButton" />
 
+    <Button
+        android:id="@+id/selectModelButton"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="72dp"
+        android:text="@string/selectModel"
+        app:layout_constraintHorizontal_bias="0.1"
+        android:textAllCaps="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/activeAlbumButton"
+        app:layout_constraintTop_toTopOf="@+id/activeAlbumButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

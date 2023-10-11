@@ -13,17 +13,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
-class Result {
-    int classIndex;
-    Float score;
-    Rect rect;
+// import com.app.nao.photorecon.Result;
 
-    public Result(int cls, Float output, Rect rect) {
-        this.classIndex = cls;
-        this.score = output;
-        this.rect = rect;
-    }
-};
+//class Result {
+//    int classIndex;
+//    Float score;
+//    Rect rect;
+//
+//    public Result(int cls, Float output, Rect rect) {
+//        this.classIndex = cls;
+//        this.score = output;
+//        this.rect = rect;
+//    }
+//};
 
 public class PrePostProcessor {
     // for yolov5 model, no need to apply MEAN and STD
@@ -41,7 +43,6 @@ public class PrePostProcessor {
     private static int mNmsLimit = 15;
 
     static String[] mClasses;
-
     // The two methods nonMaxSuppression and IOU below are ported from https://github.com/hollance/YOLO-CoreML-MPSNNGraph/blob/master/Common/Helpers.swift
     /**
      Removes bounding boxes that overlap too much with other boxes that have

@@ -18,6 +18,8 @@ public class Photo extends RealmObject {
     private String uri;
     // recognized image list
     private RealmList<SegmentedPhoto> recon_list;
+
+    private String recon_list_uri;
     // model name forwarded by
     private String model_name;
 
@@ -52,6 +54,12 @@ public class Photo extends RealmObject {
     }
     public void setModel_name(String model_name) {
         this.model_name = model_name;
+    }
+    public String getRecon_list_uri() {
+        return recon_list_uri;
+    }
+    public void setRecon_list_uri(String recon_list_uri) {
+        this.recon_list_uri = recon_list_uri;
     }
 }
 

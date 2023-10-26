@@ -9,6 +9,7 @@ import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.Result;
 import com.app.nao.photorecon.model.entity.SegmentedClass;
 import com.app.nao.photorecon.model.entity.SegmentedPhoto;
+import com.app.nao.photorecon.model.repository.LocalFileUtil;
 
 import org.bson.types.ObjectId;
 
@@ -43,7 +44,7 @@ public class ResultToEntities extends RealmDAO<Photo> {
         photo.setUri(source_image_uri);
         photo.setRecon_list(new ArrayList<SegmentedPhoto>(ph));
         photo.setModel_name(model_name);
-
+        photo.setRecon_list_uri(LocalFileUtil.LOCAL_FILE_DIRECTORY + photo.getId().toString()+"/");
         return photo;
     }
 }

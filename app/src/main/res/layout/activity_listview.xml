@@ -10,18 +10,12 @@
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent" />
-    <RelativeLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
     <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/ContainerThumbnailRecycleView"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:id="@+id/ContainerThumbnailRecycleView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingEnd="300dp"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         android:orientation="horizontal"/>
-
-</RelativeLayout>
-
 </LinearLayout>

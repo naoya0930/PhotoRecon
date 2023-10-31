@@ -23,7 +23,7 @@ import io.realm.RealmList;
 public class ResultToEntities extends RealmDAO<Photo> {
     public Photo resultToPhoto(
             ArrayList<Result> res,
-            URI source_image_uri,
+            String source_image_uri,
             SegmentedClass mSegmentedClass,
             String model_name
             ) {
@@ -44,7 +44,8 @@ public class ResultToEntities extends RealmDAO<Photo> {
         photo.setUri(source_image_uri);
         photo.setRecon_list(new ArrayList<SegmentedPhoto>(ph));
         photo.setModel_name(model_name);
-        photo.setRecon_list_uri(LocalFileUtil.LOCAL_FILE_DIRECTORY + photo.getId().toString()+"/");
+        photo.setRecon_list_uri(LocalFileUtil.LOCAL_THUMBNAILS_FILE_DIRECTORY + photo.getId().toString()+"/");
+        photo.setSourceOriginalUri(LocalFileUtil.LOCAL_ORIGINAL_FILE_DIRECTORY +  photo.getId()+"/");
         return photo;
     }
 }

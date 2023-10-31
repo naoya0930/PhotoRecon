@@ -1,6 +1,8 @@
 package com.app.nao.photorecon.model.dao;
 
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +16,6 @@ import io.realm.RealmResults;
 // もちろんその逆（データベースへのWrite）も行います。
 
 public abstract class RealmDAO<T extends RealmObject>{
-    //インメモリへの転送と，DBファイルへの反映も書きたい
-
     protected RealmConfiguration inmemoryRealmConf =
         new RealmConfiguration.Builder()
             .name("PhotoReconApp")
@@ -24,14 +24,13 @@ public abstract class RealmDAO<T extends RealmObject>{
             .compactOnLaunch()
             .inMemory()   //インメモリ実行すると，closeで破棄する．
             .build();
-    protected RealmConfiguration RealmConf =
+    protected RealmConfiguration realmConf =
         new RealmConfiguration.Builder()
             .name("PhotoReconApp")
             .allowQueriesOnUiThread(true)
             .allowWritesOnUiThread(true)
             .compactOnLaunch()
             .build();
-
     protected void create_entity(RealmConfiguration conf,T obj){
         Realm.setDefaultConfiguration(conf);
         Realm realm_instance = Realm.getDefaultInstance();
@@ -42,26 +41,31 @@ public abstract class RealmDAO<T extends RealmObject>{
 
     }
     // RealmQueryを実行する．
-    protected List<T> read_entity(RealmConfiguration conf,RealmQuery q){
+    protected List<T> read_all_entity(RealmConfiguration conf,Class<T> type){
         Realm.setDefaultConfiguration(conf);
         Realm realm_instance = Realm.getDefaultInstance();
         // RealmQuery<T> searchTaskQuery = realm_instance.where(T.class);
-        RealmResults<T> result = q.findAll();
+        List<T> result = new ArrayList<T>();
+        realm_instance.executeTransaction(r -> {
+            RealmResults<T> res = r.where(type).findAll();
+            result.addAll(r.copyFromRealm(res));
+        });
         realm_instance.close();
+        return  result;
         // Listに戻すが，後段の処理が遅い場合は，realmListの使用を検討
-        List<T> rtv = new ArrayList<T>();
-        rtv.addAll(result.subList(0, result.size()));
-        return rtv;
+//        List<T> rtv = new ArrayList<T>();
+//        rtv.addAll(result.subList(0, result.size()));
+//        return rtv;
     }
-    private void update_entity(RealmConfiguration conf, T obj){
+    protected void update_entity(RealmConfiguration conf, T obj){
         Realm.setDefaultConfiguration(conf);
         Realm realm_instance = Realm.getDefaultInstance();
         realm_instance.executeTransaction(r -> {
-            r.copyToRealmOrUpdate(obj);
+            RealmObject res = r.copyToRealmOrUpdate(obj);
         });
        realm_instance.close();
     }
-    private void delete_entity(RealmConfiguration conf,RealmQuery q){
+    protected void delete_entity(RealmConfiguration conf,RealmQuery q){
         Realm.setDefaultConfiguration(conf);
         Realm realm_instance = Realm.getDefaultInstance();
         realm_instance.executeTransaction(r->{

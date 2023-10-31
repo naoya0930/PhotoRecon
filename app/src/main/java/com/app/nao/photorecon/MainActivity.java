@@ -356,7 +356,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // mPhotoに突っ込む
         mPhoto = resultToEntities.resultToPhoto(
                 results,
-                URI.create(mSelectedImageUri.toString()),
+                mSelectedImageUri.toString(),
+                //URIでパースすると勝手に絶対パスに変換しよる（多分）
                 mSegmentedClass,
                 mPtlFileName.toString()
                 );

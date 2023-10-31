@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SaveBitmapToDataDirectory {
-    public void saveBitmapToDataDirectory(Context context, List<Bitmap> bitmaps) {
+    public void saveSegmentBitmapToDirectory(Context context, List<Bitmap> bitmaps) {
+        /*
         // ファイルを保存するディレクトリを指定，現在の画面に出ているキャッシュとして扱いたい
         File directory = new File(context.getFilesDir(), "tmp/app_data/thumbnails/");
 
@@ -36,6 +37,6 @@ public class SaveBitmapToDataDirectory {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
     }
 }

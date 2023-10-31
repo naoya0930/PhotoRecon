@@ -2,22 +2,24 @@ package com.app.nao.photorecon;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.ThemedSpinnerAdapter;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.nao.photorecon.model.entity.Photo;
+import com.app.nao.photorecon.model.entity.SegmentedPhoto;
 import com.app.nao.photorecon.model.repository.LocalFileUtil;
 import com.app.nao.photorecon.model.usecase.LoadAllPhotoResult;
 
@@ -27,64 +29,76 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+class Thumbnail{
+    public List<String> thumbnailImageUris; // 複数の画像 URI グループの文字列形式
+    public List<String> thumbnailClassnameLists;
+    Thumbnail(List<String> thumbnailImageUris,List<String> thumbnailClassnameLists) {
+        this.thumbnailClassnameLists=thumbnailClassnameLists;
+        this.thumbnailImageUris=thumbnailImageUris;
+    }
+}
+
 public class AlbumViewActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
-    // private AlbumAdapter adapter;
     private List<Photo> mPhotoList;
     // service
     private LoadAllPhotoResult mLoadAllPhotoResult;
-
-    private String[][] sets = {
-            { "Object 1", "Object 2", "Object A", "Object B" },
-            { "Object 3", "Object 4" },
-            { "Object 5", "Object 6" }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_view);
 
-        // 画像取得
-
-        // get Photo info
+        //方法1. IDからソースファイルの場所を取得する
         mLoadAllPhotoResult = new LoadAllPhotoResult();
         mPhotoList = mLoadAllPhotoResult.getAllPhotoResult();
+        ArrayList<String> sourceImageUris = new ArrayList<>();
+        ArrayList<Thumbnail> thumbnails = new ArrayList<>();
 
-        // TODO: MAP(objectid:reconobj[])形に書き換えたい
-        ArrayList<List<String>> allReconImageUrls = new ArrayList<List<String>>();
-        // ArrayList <String> reconImageUrls = new ArrayList<>();
-        // IDからソースファイルの場所を取得する
-        ArrayList<String> sourceImageUrls = new ArrayList<>();
+        //ここ絶対遅いので方法2のほうがいい気がする
+        for(Photo photo: mPhotoList){
 
-        File appDirectory = new File(getFilesDir(), LocalFileUtil.LOCAL_FILE_DIRECTORY);
+            ArrayList<String> _reconImagesUris = new ArrayList<>();
+            ArrayList<String> _segmentedClassStr = new ArrayList<>();
 
-        // ディレクトリ内のファイルおよびサブディレクトリをリストアップ
+            sourceImageUris.add(photo.getSourceOriginalUri());
+            List<SegmentedPhoto> segmentedPhoto = photo.getRecon_list();
+            File reconImageDirectory=new File(getFilesDir(),photo.getRecon_list_uri());
+            // ＊このfilesは絶対パスになるので直接使わないで
+            File[] files = reconImageDirectory.listFiles();
+            for(int x =0;x<files.length;x++){
+                _reconImagesUris.add(photo.getRecon_list_uri()+"/"+x+".JPEG");
+                // TODO:分類後のオブジェクトがあってるか確認する．
+                _segmentedClassStr.add(segmentedPhoto.get(x).getCategorization_name());
+            }
+            thumbnails.add(new Thumbnail(_reconImagesUris,_segmentedClassStr));
+
+        }
+        /* 方法2. ディレクトリ内のファイルおよびサブディレクトリをリストアップ
+        //この方法だと絶対パスが入って扱いにくくなるため使用しない
+        File appDirectory = new File(getFilesDir(), LocalFileUtil.LOCAL_THUMBNAILS_FILE_DIRECTORY);
         File[] files = appDirectory.listFiles();
-        // IDからソースファイルの場所を取得する
-
         if (files != null) {
             for (File _directory : files) {
-                sourceImageUrls.add(null);
-
+                // sourceImageUris.add(null);
                 if (_directory.isDirectory()) {
                     ArrayList<String> reconImageUrls = new ArrayList<>();
                     for (File _file : _directory.listFiles()) {
                         // ファイルの場合
                         String filePath = _file.getAbsolutePath();
-                        String fileUrl = "file:/" + filePath; // ファイルのURLを生成
+                        String fileUrl =  filePath; // ファイルのURLを生成
                         reconImageUrls.add(fileUrl); // URLをリストに追加
-                        Log.i("TESTX", fileUrl);
                     }
                     allReconImageUrls.add(reconImageUrls);
                 }
             }
         }
+        */
 
         recyclerView = findViewById(R.id.ContainerRecycleView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new ObjectListAdapter(this, sourceImageUrls, allReconImageUrls));
+        recyclerView.setAdapter((new ObjectListAdapter(this,sourceImageUris,thumbnails)));
     }
 
     protected class ObjectListAdapter extends RecyclerView.Adapter<ObjectListAdapter.ObjectViewHolder> {
@@ -92,15 +106,12 @@ public class AlbumViewActivity extends AppCompatActivity {
         private Context context;
         private AssetManager assetManager;
         private List<String> originalImageUris; // 1 つの画像 URI の文字列形式
-        private List<List<String>> thumbnailImageUris; // 複数の画像 URI グループの文字列形式
-
-        protected ObjectListAdapter(Context context, List<String> originalImageUris,
-                List<List<String>> thumbnailImageUris) {
+        private List<Thumbnail> mThumbnails;
+        protected ObjectListAdapter(Context context, List<String> originalImageUris,List<Thumbnail> thumbnails) {
             this.context = context;
             this.assetManager = context.getAssets();
             this.originalImageUris = originalImageUris;
-            this.thumbnailImageUris = thumbnailImageUris;
-            // this.adapter = new ThumbnailListAdapter(context);
+            this.mThumbnails =thumbnails;
         }
 
         @Override
@@ -112,13 +123,14 @@ public class AlbumViewActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(ObjectViewHolder holder, int position) {
-            String[] objects = sets[position];
-            holder.setObjects(objects, assetManager);
+            Thumbnail thumbnail = mThumbnails.get(position);
+            String originalImageUri = originalImageUris.get(position);
+            holder.setObjects(thumbnail,originalImageUri);
         }
 
         @Override
         public int getItemCount() {
-            return sets.length;
+            return originalImageUris.size();
         }
 
         public class ObjectViewHolder extends RecyclerView.ViewHolder {
@@ -128,9 +140,33 @@ public class AlbumViewActivity extends AppCompatActivity {
                 super(itemView);
                 imageView = itemView.findViewById(R.id.imageView);
             }
+            //prod
 
-            public void setObjects(String[] objects, AssetManager assetManager) {
-                // objectListLayout.removeAllViews();
+            public void setObjects(Thumbnail thumbnail, String originalImageUri){
+                    // Assetから画像をロードしてImageViewに設定
+                File imageDirectory = new File(getFilesDir(), originalImageUri);
+                File imageFile = imageDirectory.listFiles()[0];
+                    if (imageFile.exists()) {
+                        Uri imageUri = Uri.fromFile(imageFile);
+                        // 画像ファイルが存在する場合
+                        //不具合があるならbitmapに落とす．
+                        imageView.setImageURI(imageUri);
+                        // Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+                        // imageView.setImageBitmap(bitmap);
+                    } else {
+                        Log.i("s","s");
+                    }
+                
+                RecyclerView thumbnailRecyclerView;
+                thumbnailRecyclerView = itemView.findViewById(R.id.ContainerThumbnailRecycleView);
+                thumbnailRecyclerView
+                        .setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+                ThumbnailListAdapter adapter = new ThumbnailListAdapter(context,thumbnail);
+                thumbnailRecyclerView.setAdapter(adapter);
+            }
+
+            //debug
+            public void setObjects(Thumbnail thumbnails, AssetManager assetManager) {
                 try {
                     // Assetから画像をロードしてImageViewに設定
                     InputStream inputStream = assetManager.open("test1.png");
@@ -143,31 +179,27 @@ public class AlbumViewActivity extends AppCompatActivity {
                 thumbnailRecyclerView = itemView.findViewById(R.id.ContainerThumbnailRecycleView);
                 thumbnailRecyclerView
                         .setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-                ThumbnailListAdapter adapter = new ThumbnailListAdapter(context, objects);
+                ThumbnailListAdapter adapter = new ThumbnailListAdapter(context);
                 thumbnailRecyclerView.setAdapter(adapter);
             }
         }
-
     }
 
     protected class ThumbnailListAdapter extends RecyclerView.Adapter<ThumbnailListAdapter.ThumbnailViewHolder> {
 
         private Context context;
+        private Thumbnail thumbnail;
         private AssetManager assetManager;
-        protected RecyclerView thumbnailRecyclerView;
-        private String[] objects;
-
-        protected ThumbnailListAdapter(Context context, String[] objects) {
+        protected ThumbnailListAdapter(Context context, Thumbnail thumbnail){
             this.context = context;
-            this.assetManager = context.getAssets();
-            this.objects = objects;
+            this.thumbnail = thumbnail;
         }
 
+        //debug
         protected ThumbnailListAdapter(Context context) {
             this.context = context;
             this.assetManager = context.getAssets();
             String[] str = { "string1", "String2" };
-            this.objects = str;
         }
 
         @Override
@@ -178,14 +210,16 @@ public class AlbumViewActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(ThumbnailViewHolder holder, int position) {
-            String object = objects[position];
-            holder.setObjects(object, assetManager);
+            String segmentImageUri =thumbnail.thumbnailImageUris.get(position);
+            String segmentClassName = thumbnail.thumbnailClassnameLists.get(position);
+            holder.setObjects(segmentImageUri,segmentClassName);
+
         }
 
         @Override
         public int getItemCount() {
-            // return sets.length;
-            return objects.length;
+            //TODO:ユニークでない書き方しているの修正．クラス側にメソッドいれても良い．
+            return thumbnail.thumbnailImageUris.size();
         }
 
         public class ThumbnailViewHolder extends RecyclerView.ViewHolder {
@@ -197,7 +231,19 @@ public class AlbumViewActivity extends AppCompatActivity {
                 objectTextView = itemView.findViewById(R.id.objectTextView);
                 objectImageView = itemView.findViewById(R.id.objectImageView);
             }
+            //prod
+            public void setObjects(String imageUri,String className) {
+                File imageFile = new File(getFilesDir(), imageUri);
+                if (imageFile.getAbsoluteFile().exists()) {
+                    Uri thumbnailUri = Uri.fromFile(imageFile);
+                    objectImageView.setImageURI(thumbnailUri);
+                } else {
+                    // TODO:errorハンドリング
+                }
+                objectTextView.setText(className);
+            }
 
+            //debug
             public void setObjects(String object, AssetManager assetManager) {
                 try {
                     InputStream inputStream = assetManager.open("test3.png");
@@ -206,7 +252,6 @@ public class AlbumViewActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                // ここが複数回呼び出されない
                 objectTextView.setText(object);
             }
         }

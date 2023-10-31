@@ -14,11 +14,14 @@ import java.util.List;
 public class Photo extends RealmObject {
     // unique ID
     @PrimaryKey private ObjectId id;
-    // source image local uri
+    // source image local uri.this image is saved in app local.
     private String uri;
+
+    // source image original location URI
+    private String sourceOriginalUri;
     // recognized image list
     private RealmList<SegmentedPhoto> recon_list;
-
+    // recognized image list URI
     private String recon_list_uri;
     // model name forwarded by
     private String model_name;
@@ -40,6 +43,12 @@ public class Photo extends RealmObject {
     public void setUri(String uri){ this.uri = uri;}
     public List<SegmentedPhoto> getRecon_list() {
         return recon_list;
+    }
+    public String getSourceOriginalUri() {
+        return sourceOriginalUri;
+    }
+    public void setSourceOriginalUri(String sourceOriginalUri) {
+        this.sourceOriginalUri = sourceOriginalUri;
     }
     public void setRecon_list(List<SegmentedPhoto> recon_list) {
         // トランザクション中で呼び出しが必要なので，切り出す．;

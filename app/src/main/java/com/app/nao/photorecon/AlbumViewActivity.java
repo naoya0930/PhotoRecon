@@ -22,6 +22,7 @@ import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.model.entity.SegmentedPhoto;
 import com.app.nao.photorecon.model.repository.LocalFileUtil;
 import com.app.nao.photorecon.model.usecase.LoadAllPhotoResult;
+import com.bumptech.glide.Glide;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,27 +76,6 @@ public class AlbumViewActivity extends AppCompatActivity {
             thumbnails.add(new Thumbnail(_reconImagesUris,_segmentedClassStr));
 
         }
-        /* 方法2. ディレクトリ内のファイルおよびサブディレクトリをリストアップ
-        //この方法だと絶対パスが入って扱いにくくなるため使用しない
-        File appDirectory = new File(getFilesDir(), LocalFileUtil.LOCAL_THUMBNAILS_FILE_DIRECTORY);
-        File[] files = appDirectory.listFiles();
-        if (files != null) {
-            for (File _directory : files) {
-                // sourceImageUris.add(null);
-                if (_directory.isDirectory()) {
-                    ArrayList<String> reconImageUrls = new ArrayList<>();
-                    for (File _file : _directory.listFiles()) {
-                        // ファイルの場合
-                        String filePath = _file.getAbsolutePath();
-                        String fileUrl =  filePath; // ファイルのURLを生成
-                        reconImageUrls.add(fileUrl); // URLをリストに追加
-                    }
-                    allReconImageUrls.add(reconImageUrls);
-                }
-            }
-        }
-        */
-
         recyclerView = findViewById(R.id.ContainerRecycleView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter((new ObjectListAdapter(this,sourceImageUris,thumbnails)));
@@ -157,7 +137,8 @@ public class AlbumViewActivity extends AppCompatActivity {
                                 .load(imageUri)
                                 .into(imageView);
                     } else {
-                        Log.i("s","s");
+                        //TODO: 画像が見つからないときの対応
+                        Log.w("TEST","missing original lImage!");
                     }
                 
                 RecyclerView thumbnailRecyclerView;
@@ -165,24 +146,6 @@ public class AlbumViewActivity extends AppCompatActivity {
                 thumbnailRecyclerView
                         .setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
                 ThumbnailListAdapter adapter = new ThumbnailListAdapter(context,thumbnail);
-                thumbnailRecyclerView.setAdapter(adapter);
-            }
-
-            //debug
-            public void setObjects(Thumbnail thumbnails, AssetManager assetManager) {
-                try {
-                    // Assetから画像をロードしてImageViewに設定
-                    InputStream inputStream = assetManager.open("test1.png");
-                    Drawable drawable = Drawable.createFromStream(inputStream, null);
-                    imageView.setImageDrawable(drawable);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                RecyclerView thumbnailRecyclerView;
-                thumbnailRecyclerView = itemView.findViewById(R.id.ContainerThumbnailRecycleView);
-                thumbnailRecyclerView
-                        .setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-                ThumbnailListAdapter adapter = new ThumbnailListAdapter(context);
                 thumbnailRecyclerView.setAdapter(adapter);
             }
         }
@@ -198,12 +161,6 @@ public class AlbumViewActivity extends AppCompatActivity {
             this.thumbnail = thumbnail;
         }
 
-        //debug
-        protected ThumbnailListAdapter(Context context) {
-            this.context = context;
-            this.assetManager = context.getAssets();
-            String[] str = { "string1", "String2" };
-        }
 
         @Override
         public ThumbnailViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -234,7 +191,6 @@ public class AlbumViewActivity extends AppCompatActivity {
                 objectTextView = itemView.findViewById(R.id.objectTextView);
                 objectImageView = itemView.findViewById(R.id.objectImageView);
             }
-            //prod
             public void setObjects(String imageUri,String className) {
                 File imageFile = new File(getFilesDir(), imageUri);
                 if (imageFile.getAbsoluteFile().exists()) {
@@ -245,20 +201,9 @@ public class AlbumViewActivity extends AppCompatActivity {
                             .into(objectImageView);
                 } else {
                     // TODO:errorハンドリング
+                    Log.w("TEST","missing thumbnail Image!");
                 }
                 objectTextView.setText(className);
-            }
-
-            //debug
-            public void setObjects(String object, AssetManager assetManager) {
-                try {
-                    InputStream inputStream = assetManager.open("test3.png");
-                    Drawable drawable = Drawable.createFromStream(inputStream, null);
-                    objectImageView.setImageDrawable(drawable);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                objectTextView.setText(object);
             }
         }
     }

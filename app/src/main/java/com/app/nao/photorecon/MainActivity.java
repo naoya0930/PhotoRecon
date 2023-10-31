@@ -40,7 +40,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -162,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 //アルバム起動
                 //これは別のインテントで
                 final Intent intent = new Intent(MainActivity.this, AlbumViewActivity.class);
-                // intent.putExtra("KEY_PHOTO_URI",mPhoto.getUri().toString());
                 startActivity(intent);
             }
         });
@@ -187,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 // resultの情報をもとにrealmに情報を登録する．
                 mSavePhoto = new SavePhoto(mPhoto);
                 mSavePhoto.saveSegmentBitmapToDirectory(v.getContext(),mPreSegmentedThumbnails);
-                mSavePhoto.saveOriginalBitmapToDirctory(v.getContext(),mBitmap);
+                mSavePhoto.saveOriginalBitmapToDirectory(v.getContext(),mBitmap);
                 mSavePhoto.registerToRealm();
                 mRegisterButton.setEnabled(false);
 

@@ -182,10 +182,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonResisterPhoto.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //ローカルファイルに保存する
-                saveBitmapToDataDirectory.saveBitmapToDataDirectory(v.getContext(), mPreSegmentedThumbnails);
+                //saveBitmapToDataDirectory.saveSegmentBitmapToDirectory(v.getContext(), mPreSegmentedThumbnails);
+                // saveBitmapToDataDirectory.saveOriginalBitmapToDiarectory(v.getContext(),mBitmap);
                 // resultの情報をもとにrealmに情報を登録する．
                 mSavePhoto = new SavePhoto(mPhoto);
-                mSavePhoto.saveBitmapToDataDirectory(v.getContext(),mPreSegmentedThumbnails);
+                mSavePhoto.saveSegmentBitmapToDirectory(v.getContext(),mPreSegmentedThumbnails);
+                mSavePhoto.saveOriginalBitmapToDirctory(v.getContext(),mBitmap);
                 mSavePhoto.registerToRealm();
                 mRegisterButton.setEnabled(false);
 

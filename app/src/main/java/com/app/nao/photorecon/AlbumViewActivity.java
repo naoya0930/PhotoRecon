@@ -150,9 +150,12 @@ public class AlbumViewActivity extends AppCompatActivity {
                         Uri imageUri = Uri.fromFile(imageFile);
                         // 画像ファイルが存在する場合
                         //不具合があるならbitmapに落とす．
-                        imageView.setImageURI(imageUri);
+                        // imageView.setImageURI(imageUri);
                         // Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
                         // imageView.setImageBitmap(bitmap);
+                        Glide.with(context)
+                                .load(imageUri)
+                                .into(imageView);
                     } else {
                         Log.i("s","s");
                     }
@@ -236,7 +239,10 @@ public class AlbumViewActivity extends AppCompatActivity {
                 File imageFile = new File(getFilesDir(), imageUri);
                 if (imageFile.getAbsoluteFile().exists()) {
                     Uri thumbnailUri = Uri.fromFile(imageFile);
-                    objectImageView.setImageURI(thumbnailUri);
+                    // objectImageView.setImageURI(thumbnailUri);
+                    Glide.with(context)
+                            .load(thumbnailUri)
+                            .into(objectImageView);
                 } else {
                     // TODO:errorハンドリング
                 }

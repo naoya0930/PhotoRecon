@@ -22,6 +22,7 @@ import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.model.entity.SegmentedPhoto;
 import com.app.nao.photorecon.model.repository.LocalFileUtil;
 import com.app.nao.photorecon.model.usecase.LoadAllPhotoResult;
+import com.app.nao.photorecon.ui.util.ScreenInfo;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
@@ -43,6 +44,8 @@ public class AlbumViewActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private List<Photo> mPhotoList;
+
+    private int mScreenWidth;
     // service
     private LoadAllPhotoResult mLoadAllPhotoResult;
 
@@ -50,6 +53,9 @@ public class AlbumViewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_view);
+
+        //イメージのサイズを取得
+        mScreenWidth = ScreenInfo.getDisplaySize(this).x;
 
         //方法1. IDからソースファイルの場所を取得する
         mLoadAllPhotoResult = new LoadAllPhotoResult();
@@ -135,6 +141,7 @@ public class AlbumViewActivity extends AppCompatActivity {
                         // imageView.setImageBitmap(bitmap);
                         Glide.with(context)
                                 .load(imageUri)
+                                .override(mScreenWidth)
                                 .into(imageView);
                     } else {
                         //TODO: 画像が見つからないときの対応

@@ -1,10 +1,7 @@
-package com.app.nao.photorecon;
+package com.app.nao.photorecon.ui.album;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,35 +15,28 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.app.nao.photorecon.R;
 import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.model.entity.SegmentedPhoto;
-import com.app.nao.photorecon.model.repository.LocalFileUtil;
 import com.app.nao.photorecon.model.usecase.LoadAllPhotoResult;
 import com.app.nao.photorecon.ui.util.ScreenInfo;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-class Thumbnail{
-    public List<String> thumbnailImageUris; // 複数の画像 URI グループの文字列形式
-    public List<String> thumbnailClassnameLists;
-    Thumbnail(List<String> thumbnailImageUris,List<String> thumbnailClassnameLists) {
-        this.thumbnailClassnameLists=thumbnailClassnameLists;
-        this.thumbnailImageUris=thumbnailImageUris;
-    }
-}
+
 
 public class AlbumViewActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerView;
+    private RecyclerView mAlbumRecyclerView;
     private List<Photo> mPhotoList;
 
-    private int mScreenWidth;
-    // service
+    private ArrayList<String> mSourceImageUris;
+    private ArrayList<Thumbnail> mThumbnails;
+
+    // private int mScreenWidth;
     private LoadAllPhotoResult mLoadAllPhotoResult;
 
     @Override
@@ -54,39 +44,41 @@ public class AlbumViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_view);
 
-        //イメージのサイズを取得
-        mScreenWidth = ScreenInfo.getDisplaySize(this).x;
 
-        //方法1. IDからソースファイルの場所を取得する
+        //イメージのサイズを取得
+        // mScreenWidth = ScreenInfo.getDisplaySize(this).x;
+
         mLoadAllPhotoResult = new LoadAllPhotoResult();
         mPhotoList = mLoadAllPhotoResult.getAllPhotoResult();
-        ArrayList<String> sourceImageUris = new ArrayList<>();
-        ArrayList<Thumbnail> thumbnails = new ArrayList<>();
+        mSourceImageUris = new ArrayList<>();
+        mThumbnails = new ArrayList<>();
+        // ファイル走査してセット．
+        // TODO:UIのスレッドでやっているけど問題なし？
+        setFiles();
 
-        //ここ絶対遅いので方法2のほうがいい気がする
+        mAlbumRecyclerView = findViewById(R.id.ContainerRecycleView);
+        mAlbumRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mAlbumRecyclerView.setAdapter((new AlbumViewComponentAdapter(this, mSourceImageUris, mThumbnails)));
+    }
+    private void setFiles(){
         for(Photo photo: mPhotoList){
 
             ArrayList<String> _reconImagesUris = new ArrayList<>();
             ArrayList<String> _segmentedClassStr = new ArrayList<>();
 
-            sourceImageUris.add(photo.getSourceOriginalUri());
+            mSourceImageUris.add(photo.getSourceOriginalUri());
             List<SegmentedPhoto> segmentedPhoto = photo.getRecon_list();
             File reconImageDirectory=new File(getFilesDir(),photo.getRecon_list_uri());
             // ＊このfilesは絶対パスになるので直接使わないで
             File[] files = reconImageDirectory.listFiles();
             for(int x =0;x<files.length;x++){
                 _reconImagesUris.add(photo.getRecon_list_uri()+"/"+x+".JPEG");
-                // TODO:分類後のオブジェクトがあってるか確認する．
                 _segmentedClassStr.add(segmentedPhoto.get(x).getCategorization_name());
             }
-            thumbnails.add(new Thumbnail(_reconImagesUris,_segmentedClassStr));
-
+            mThumbnails.add(new Thumbnail(_reconImagesUris,_segmentedClassStr));
         }
-        recyclerView = findViewById(R.id.ContainerRecycleView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter((new ObjectListAdapter(this,sourceImageUris,thumbnails)));
     }
-
+/*
     protected class ObjectListAdapter extends RecyclerView.Adapter<ObjectListAdapter.ObjectViewHolder> {
 
         private Context context;
@@ -129,7 +121,7 @@ public class AlbumViewActivity extends AppCompatActivity {
             //prod
 
             public void setObjects(Thumbnail thumbnail, String originalImageUri){
-                    // Assetから画像をロードしてImageViewに設定
+                // Assetから画像をロードしてImageViewに設定
                 File imageDirectory = new File(getFilesDir(), originalImageUri);
                 File imageFile = imageDirectory.listFiles()[0];
                     if (imageFile.exists()) {
@@ -157,7 +149,8 @@ public class AlbumViewActivity extends AppCompatActivity {
             }
         }
     }
-
+*/
+/*
     protected class ThumbnailListAdapter extends RecyclerView.Adapter<ThumbnailListAdapter.ThumbnailViewHolder> {
 
         private Context context;
@@ -214,4 +207,7 @@ public class AlbumViewActivity extends AppCompatActivity {
             }
         }
     }
+
+ */
+
 }

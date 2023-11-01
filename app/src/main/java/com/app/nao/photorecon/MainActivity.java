@@ -52,6 +52,7 @@ import com.app.nao.photorecon.model.usecase.ResultToEntities;
 import com.app.nao.photorecon.model.usecase.SaveBitmapToDataDirectory;
 import com.app.nao.photorecon.model.usecase.SavePhoto;
 import com.app.nao.photorecon.model.usecase.SnapRectanglePhoto;
+import com.app.nao.photorecon.ui.album.AlbumViewActivity;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private int mImageIndex = 0;

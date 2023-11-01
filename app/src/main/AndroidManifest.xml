@@ -27,7 +27,7 @@
             android:screenOrientation="portrait">
         </activity>
         <activity
-            android:name=".AlbumViewActivity"
+            android:name=".ui.album.AlbumViewActivity"
             android:configChanges="orientation"
             android:screenOrientation="portrait">
         </activity>

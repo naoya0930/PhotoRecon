@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,15 +25,16 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
     private Context context;
     private AssetManager assetManager;
     private List<String> originalImageUris; // 1 つの画像 URI の文字列形式
+    private List<String> mCreateAt;
     private List<Thumbnail> mThumbnails;
     private int screenWidth;
 
-    protected AlbumViewComponentAdapter(Context context, List<String> originalImageUris, List<Thumbnail> thumbnails) {
+    protected AlbumViewComponentAdapter(Context context, List<String> originalImageUris, List<Thumbnail> thumbnails,List<String> createDate) {
         this.context = context;
         this.assetManager = context.getAssets();
         this.originalImageUris = originalImageUris;
         this.mThumbnails =thumbnails;
-
+        this.mCreateAt = createDate;
     }
 
     @Override
@@ -46,7 +48,8 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
     public void onBindViewHolder(AlbumViewComponentAdapter.ObjectViewHolder holder, int position) {
         Thumbnail thumbnail = mThumbnails.get(position);
         String originalImageUri = originalImageUris.get(position);
-        holder.setObjects(originalImageUri);
+        String reconDate = mCreateAt.get(position);
+        holder.setObjects(originalImageUri, reconDate);
         holder.setThumbnailRecyclerView(thumbnail);
     }
 
@@ -57,15 +60,18 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
 
     public class ObjectViewHolder extends RecyclerView.ViewHolder {
         private ImageView imageView;
+        private TextView mDateTextView;
         private RecyclerView thumbnailViewComponentAdapter;
 
         public ObjectViewHolder(View itemView) {
             super(itemView);
+            mDateTextView = itemView.findViewById(R.id.dateText);
             imageView = itemView.findViewById(R.id.imageView);
         }
 
-        public void setObjects(String originalImageUri) {
+        public void setObjects(String originalImageUri,String reconDate) {
             // Assetから画像をロードしてImageViewに設定
+            mDateTextView.setText(reconDate);
             File imageDirectory = new File(context.getFilesDir(), originalImageUri);
             File imageFile = imageDirectory.listFiles()[0];
             if (imageFile.exists()) {

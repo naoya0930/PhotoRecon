@@ -53,6 +53,7 @@ import com.app.nao.photorecon.model.usecase.SaveBitmapToDataDirectory;
 import com.app.nao.photorecon.model.usecase.SavePhoto;
 import com.app.nao.photorecon.model.usecase.SnapRectanglePhoto;
 import com.app.nao.photorecon.ui.album.AlbumViewActivity;
+import com.app.nao.photorecon.ui.util.DateManager;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private int mImageIndex = 0;
@@ -181,6 +182,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonResisterPhoto.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //ローカルファイルに保存する
+                //日付をセットする．
+                mPhoto.setSaved_at(DateManager.getLocalDate());
                 //saveBitmapToDataDirectory.saveSegmentBitmapToDirectory(v.getContext(), mPreSegmentedThumbnails);
                 // saveBitmapToDataDirectory.saveOriginalBitmapToDiarectory(v.getContext(),mBitmap);
                 // resultの情報をもとにrealmに情報を登録する．
@@ -360,6 +363,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 mSegmentedClass,
                 mPtlFileName.toString()
                 );
+        
 
 
         runOnUiThread(() -> {

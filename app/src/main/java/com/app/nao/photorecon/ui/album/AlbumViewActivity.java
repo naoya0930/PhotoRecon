@@ -34,6 +34,7 @@ public class AlbumViewActivity extends AppCompatActivity {
     private List<Photo> mPhotoList;
 
     private ArrayList<String> mSourceImageUris;
+    private ArrayList<String> mRecognitionDate;
     private ArrayList<Thumbnail> mThumbnails;
 
     // private int mScreenWidth;
@@ -51,6 +52,7 @@ public class AlbumViewActivity extends AppCompatActivity {
         mLoadAllPhotoResult = new LoadAllPhotoResult();
         mPhotoList = mLoadAllPhotoResult.getAllPhotoResult();
         mSourceImageUris = new ArrayList<>();
+        mRecognitionDate =new ArrayList<>();
         mThumbnails = new ArrayList<>();
         // ファイル走査してセット．
         // TODO:UIのスレッドでやっているけど問題なし？
@@ -58,8 +60,9 @@ public class AlbumViewActivity extends AppCompatActivity {
 
         mAlbumRecyclerView = findViewById(R.id.ContainerRecycleView);
         mAlbumRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mAlbumRecyclerView.setAdapter((new AlbumViewComponentAdapter(this, mSourceImageUris, mThumbnails)));
+        mAlbumRecyclerView.setAdapter((new AlbumViewComponentAdapter(this,mSourceImageUris, mThumbnails, mRecognitionDate)));
     }
+
     private void setFiles(){
         for(Photo photo: mPhotoList){
 
@@ -67,6 +70,7 @@ public class AlbumViewActivity extends AppCompatActivity {
             ArrayList<String> _segmentedClassStr = new ArrayList<>();
 
             mSourceImageUris.add(photo.getSourceOriginalUri());
+            mRecognitionDate.add(photo.getSaved_at());
             List<SegmentedPhoto> segmentedPhoto = photo.getRecon_list();
             File reconImageDirectory=new File(getFilesDir(),photo.getRecon_list_uri());
             // ＊このfilesは絶対パスになるので直接使わないで

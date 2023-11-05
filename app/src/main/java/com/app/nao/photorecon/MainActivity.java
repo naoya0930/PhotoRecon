@@ -96,22 +96,39 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return file.getAbsolutePath();
         }
     }
-
+// TODO:ここ以下２つのメソッドをまとめる
+    protected boolean checkManageExtraStoragePermission(){
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.MANAGE_EXTERNAL_STORAGE) !=
+                PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE},1);
+        }else{
+            return true;
+        }
+        return false;
+    }
+    protected boolean checkReadMediaImagePermission(){
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.READ_MEDIA_IMAGES) !=
+                PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES},1);
+        }else{
+            return true;
+        }
+        return false;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        // TODO:android 31以降は無視されるので注意
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
         }
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
         }
-        //dataへのアクセス...外部ストレージへのアクセスは無い
-        //if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-        //    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-        //}
+        // android 33より新しい場合はメソッド側で毎回確かめるようにする．
+        // OnCreateで権限チェックはできなくなっている．
 
         setContentView(R.layout.activity_main);
 
@@ -162,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             public void onClick(View v) {
                 //アルバム起動
                 //これは別のインテントで
+
                 final Intent intent = new Intent(MainActivity.this, AlbumViewActivity.class);
                 startActivity(intent);
             }
@@ -171,9 +189,13 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             @Override
             public void onClick(View v) {
                 //写真を選択させる．intent起動
-                Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-                activityResultLauncher.launch(pickPhoto);
-                //結果をresultviewに表示
+                if(checkReadMediaImagePermission()) {
+                    Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+                    activityResultLauncher.launch(pickPhoto);
+                    //結果をresultviewに表示
+                }else{
+
+                }
 
             }
         });

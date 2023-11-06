@@ -72,6 +72,10 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
         public void setObjects(String originalImageUri,String reconDate) {
             // Assetから画像をロードしてImageViewに設定
             mDateTextView.setText(reconDate);
+            //クリックした際の挙動をセット
+            AlbumImageTapHandler albumImageTapHandler = new AlbumImageTapHandler(context,"testId");
+            imageView.setOnLongClickListener(albumImageTapHandler);
+            // イメージのセット．汎用化できそうですな
             File imageDirectory = new File(context.getFilesDir(), originalImageUri);
             File imageFile = imageDirectory.listFiles()[0];
             if (imageFile.exists()) {

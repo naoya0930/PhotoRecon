@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private Module mModule = null;
     private SegmentedClass mSegmentedClass;
     private Photo mPhoto;
-    // Activities or servies
+    // Activities or services
     private ResultToEntities resultToEntities;
     private SnapRectanglePhoto snapRectanglePhoto;
     private SaveBitmapToDataDirectory saveBitmapToDataDirectory;
@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 //ローカルファイルに保存する
                 //日付をセットする．
                 mPhoto.setSaved_at(DateManager.getLocalDate());
-                //saveBitmapToDataDirectory.saveSegmentBitmapToDirectory(v.getContext(), mPreSegmentedThumbnails);
+                // saveBitmapToDataDirectory.saveSegmentBitmapToDirectory(v.getContext(), mPreSegmentedThumbnails);
                 // saveBitmapToDataDirectory.saveOriginalBitmapToDiarectory(v.getContext(),mBitmap);
                 // resultの情報をもとにrealmに情報を登録する．
                 mSavePhoto = new SavePhoto(mPhoto);
@@ -362,16 +362,16 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // Log.i("TEST","mImage view size:"+mImageView.getHeight()+" / "+mImageView.getHeight());
         // Log.i("TEST","resizedBitmap size:"+resizedBitmap.getHeight()+" / "+resizedBitmap.getHeight());
         // 元の画像 mBitmap 短い方に圧縮
-        //Image View 1080*1080
-        //resized bitmap 640*640
-        //元の画像との比率
-        //mImgScaleY...3000/640
-        //mImgScaleX...4000/640
-        //UI上のイメージviewと画像の比率
-        //mIvScaleY=0.27
-        //mIvScaleX=0.27
-        //mStartX=0.0
-        //mStartY=134.99997
+        // Image View 1080*1080
+        // resized bitmap 640*640
+        // 元の画像との比率
+        // mImgScaleY...3000/640
+        // mImgScaleX...4000/640
+        // UI上のイメージviewと画像の比率
+        // mIvScaleY=0.27
+        // mIvScaleX=0.27
+        // mStartX=0.0
+        // mStartY=134.99997
         mPreSegmentedThumbnails =  new ArrayList<Bitmap>(snapRectanglePhoto.makeSegmentedImages(
                 mIvScaleX,mIvScaleY,
                 mStartX,mStartY,

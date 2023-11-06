@@ -19,7 +19,6 @@ public class ScreenInfo {
         return point;
     }
 
-    @SuppressLint("NewApi")
     public static Point getRealSize(Activity activity) {
 
         Display display = activity.getWindowManager().getDefaultDisplay();

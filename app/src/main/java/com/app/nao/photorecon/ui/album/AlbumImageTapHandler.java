@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.app.nao.photorecon.MainActivity;
+import org.bson.types.ObjectId;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ import javax.annotation.RegEx;
 public class AlbumImageTapHandler implements View.OnLongClickListener{
     private Context context;
     private View view;
-    private String albumId;
-    AlbumImageTapHandler(Context context,String albumId){
+    private ObjectId albumId;
+    AlbumImageTapHandler(Context context, ObjectId albumId){
         this.context = context;
         this.albumId = albumId;
     }

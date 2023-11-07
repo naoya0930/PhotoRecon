@@ -3,7 +3,10 @@ package com.app.nao.photorecon.model.dao;
 
 import android.util.Log;
 
+import org.bson.types.ObjectId;
+
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,28 +70,35 @@ public abstract class RealmDAO<T extends RealmObject>{
         });
        realm_instance.close();
     }
-    protected T deleteEntityByStringPrimaryKey(RealmConfiguration conf,String key,Class<T> type){
-        Realm realm_instance = Realm.getInstance(conf);
+    protected T deleteEntityByStringPrimaryKey(RealmConfiguration conf,ObjectId key,Class<T> type){
+        Realm.setDefaultConfiguration(conf);
+        Realm realm_instance = Realm.getDefaultInstance();
         List<T> rl= new ArrayList<T>();
+        T t = findByPrimaryStringKey(conf,key,type);
         realm_instance.executeTransaction(r->{
-            T t = findByPrimaryStringKey(conf,key,type);
             rl.add(t);
             t.deleteFromRealm();
         });
         realm_instance.close();
         return rl.get(0);
     }
-    protected T findByPrimaryStringKey(RealmConfiguration conf,Object key,Class<T> type) {
-        Realm realm_instance = Realm.getInstance(conf);
+    //ObjectId型はobjectで受けられない
+    protected T findByPrimaryStringKey(RealmConfiguration conf,ObjectId key,Class<T> type) {
+        Realm.setDefaultConfiguration(conf);
+        Realm realm_instance = Realm.getDefaultInstance();
         List<T> res = new ArrayList<>();
+        Field primaryKeyField = getPrimaryKeyField(type);
+        Type primaryKeyType = primaryKeyField.getType();
+
         realm_instance.executeTransaction(r->{
-            T t =r.where(type).equalTo(getPrimaryKeyName(type),key.toString()).findFirst();
+            // TODO:ここキャストしてたらプライマリキーを動的に見つけた意味がないのでなんとか考えてみる．
+            T t =r.where(type).equalTo(primaryKeyField.getName(),(ObjectId) key ).findFirst();
             res.add(t);
         });
         realm_instance.close();
         return res.get(0);
     }
-    private String getPrimaryKeyName(Class<T> type) {
+    private Field getPrimaryKeyField(Class<T> type) {
         Field primaryKeyField = null;
         // Tクラスのフィールドを取得
         Field[] fields = type.getDeclaredFields();
@@ -102,7 +112,7 @@ public abstract class RealmDAO<T extends RealmObject>{
         if (primaryKeyField == null) {
             throw new IllegalArgumentException("Primary key field not found in class " + type.getName());
         }
-        return primaryKeyField.getName();
+        return primaryKeyField;
     }
 
 }

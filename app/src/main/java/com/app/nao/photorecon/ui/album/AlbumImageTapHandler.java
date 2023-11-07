@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.util.Log;
 import android.view.View;
@@ -55,16 +56,20 @@ public class AlbumImageTapHandler implements View.OnLongClickListener{
     // protected boolean checkDelete = false;
     private boolean checkDeleteFunction(View view){
         AlertDialog.Builder builder = new AlertDialog.Builder((Activity)view.getContext());
-        builder.setMessage(/*R.string.dialog_start_game*/"Delete this image?\nこの画像をアプリケーションから削除します．\n元の画像は削除されません．")
+        builder.setMessage(/*R.string.dialog_start_game*/"Delete this recognition result?\nこの結果をアプリケーションから削除しますか?\n保存元の画像は削除されません．")
                 .setPositiveButton(/*R.string.start*/"Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // TODO: このリスナー関数内を別で記述．厳密なので，interfaceから書く．
                         //Realmから削除していることに注意．
                         DeletePhotoFromRealm deleteAlbumFromRealm =new DeletePhotoFromRealm();
                         if(deleteAlbumFromRealm.deleteAlbumFromRealm(albumId) != null){
-                            // realmからのみ削除しているので気をつける！ローカルファイルには残ったまま！
                             DeletePhotoFromLocalFile deletePhotoFromLocalFile = new DeletePhotoFromLocalFile();
                             deletePhotoFromLocalFile.deletePhotoFromLocalFile(view.getContext(),albumId.toString());
+                            //TODO:描写を更新する．もっといい方法があるかもしれない．
+                            //TODO:この方法のまま実装するなら，アニメーションは変更すること．
+                            final Intent intent = new Intent(view.getContext(), AlbumViewActivity.class);
+                            view.getContext().startActivity(intent);
+                            ((Activity) view.getContext()).finish();
                         }else{
                             Log.i("u_REALM ","削除処理に失敗しました．");
                         }

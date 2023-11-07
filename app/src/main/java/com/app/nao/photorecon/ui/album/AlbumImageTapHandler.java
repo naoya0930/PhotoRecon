@@ -12,6 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.app.nao.photorecon.MainActivity;
+import com.app.nao.photorecon.model.usecase.DeletePhotoFromLocalFile;
+import com.app.nao.photorecon.model.usecase.DeletePhotoFromRealm;
+
 import org.bson.types.ObjectId;
 
 import java.io.IOException;
@@ -55,13 +58,16 @@ public class AlbumImageTapHandler implements View.OnLongClickListener{
         builder.setMessage(/*R.string.dialog_start_game*/"Delete this image?\nこの画像をアプリケーションから削除します．\n元の画像は削除されません．")
                 .setPositiveButton(/*R.string.start*/"Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // START THE GAME!
-                        // checkDelete = true;
-                        // if(deleteAlbumFromRealm()){
-                        //    updateView();
-                        //}else{
+                        // TODO: このリスナー関数内を別で記述．厳密なので，interfaceから書く．
+                        //Realmから削除していることに注意．
+                        DeletePhotoFromRealm deleteAlbumFromRealm =new DeletePhotoFromRealm();
+                        if(deleteAlbumFromRealm.deleteAlbumFromRealm(albumId) != null){
+                            // realmからのみ削除しているので気をつける！ローカルファイルには残ったまま！
+                            DeletePhotoFromLocalFile deletePhotoFromLocalFile = new DeletePhotoFromLocalFile();
+                            deletePhotoFromLocalFile.deletePhotoFromLocalFile(view.getContext(),albumId.toString());
+                        }else{
                             Log.i("u_REALM ","削除処理に失敗しました．");
-                        //}
+                        }
                     }
                 })
                 .setNegativeButton(/*R.string.cancel*/ "No", new DialogInterface.OnClickListener() {

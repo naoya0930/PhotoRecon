@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.nao.photorecon.R;
+import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.ui.util.ScreenInfo;
 import com.bumptech.glide.Glide;
 
@@ -27,14 +28,19 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
     private List<String> originalImageUris; // 1 つの画像 URI の文字列形式
     private List<String> mCreateAt;
     private List<Thumbnail> mThumbnails;
+    private List<Photo> mPhotoList;
     private int screenWidth;
 
-    protected AlbumViewComponentAdapter(Context context, List<String> originalImageUris, List<Thumbnail> thumbnails,List<String> createDate) {
+//    protected AlbumViewComponentAdapter(Context context, List<String> originalImageUris, List<Thumbnail> thumbnails,List<String> createDate) {
+//        this.context = context;
+//        this.assetManager = context.getAssets();
+//        this.originalImageUris = originalImageUris;
+//        this.mThumbnails =thumbnails;
+//        this.mCreateAt = createDate;
+//    }
+    protected AlbumViewComponentAdapter(Context context, List<Photo> photoList){
         this.context = context;
-        this.assetManager = context.getAssets();
-        this.originalImageUris = originalImageUris;
-        this.mThumbnails =thumbnails;
-        this.mCreateAt = createDate;
+        this.mPhotoList =photoList;
     }
 
     @Override
@@ -46,18 +52,21 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
 
     @Override
     public void onBindViewHolder(AlbumViewComponentAdapter.ObjectViewHolder holder, int position) {
-        Thumbnail thumbnail = mThumbnails.get(position);
-        String originalImageUri = originalImageUris.get(position);
-        String reconDate = mCreateAt.get(position);
-        holder.setObjects(originalImageUri, reconDate);
-        holder.setThumbnailRecyclerView(thumbnail);
+        //ここから：ここをmPhotoList使った形に直す
+        Photo photo = mPhotoList.get(position);
+        holder.setOriginalImage(photo);
+        holder.setThumbnailRecyclerView(photo);
+        //
+//        Thumbnail thumbnail = mThumbnails.get(position);
+//        String originalImageUri = originalImageUris.get(position);
+//        String reconDate = mCreateAt.get(position);
+//        holder.setObjects(originalImageUri, reconDate);
+//        holder.setThumbnailRecyclerView(thumbnail);
     }
 
     @Override
-    public int getItemCount() {
-        return originalImageUris.size();
-    }
-
+    // public int getItemCount() {return originalImageUris.size();}
+    public int getItemCount() { return mPhotoList.size();}
     public class ObjectViewHolder extends RecyclerView.ViewHolder {
         private ImageView imageView;
         private TextView mDateTextView;
@@ -69,22 +78,56 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
             imageView = itemView.findViewById(R.id.imageView);
         }
 
-        public void setObjects(String originalImageUri,String reconDate) {
-            // Assetから画像をロードしてImageViewに設定
-            mDateTextView.setText(reconDate);
+//        public void setObjects(String originalImageUri,String reconDate) {
+//            // Assetから画像をロードしてImageViewに設定
+//            mDateTextView.setText(reconDate);
+//            //クリックした際の挙動をセット
+//            AlbumImageTapHandler albumImageTapHandler = new AlbumImageTapHandler(context,"testId");
+//            imageView.setOnLongClickListener(albumImageTapHandler);
+//            // イメージのセット．汎用化できそうですな
+//            File imageDirectory = new File(context.getFilesDir(), originalImageUri);
+//            File imageFile = imageDirectory.listFiles()[0];
+//            if (imageFile.exists()) {
+//                Uri imageUri = Uri.fromFile(imageFile);
+//                // 画像ファイルが存在する場合
+//                //不具合があるならbitmapに落とす．
+//                // imageView.setImageURI(imageUri);
+//                // Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+//                // imageView.setImageBitmap(bitmap);
+//                Glide.with(context)
+//                        .load(imageUri)
+//                        .override(screenWidth)
+//                        .into(imageView);
+//            } else {
+//                //TODO: 画像が見つからないときの対応
+//                Log.w("TEST", "missing original lImage!");
+//            }
+//        }
+//        public void setThumbnailRecyclerView(Thumbnail thumbnail) {
+//            // findbyIDは毎回呼び出す必要がある
+//            thumbnailViewComponentAdapter = itemView.findViewById(R.id.ContainerThumbnailRecycleView);
+//            thumbnailViewComponentAdapter.setLayoutManager(
+//                    new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+//            ThumbnailViewComponentAdapter adapter = new ThumbnailViewComponentAdapter(context, thumbnail);
+//            thumbnailViewComponentAdapter.setAdapter(adapter);
+//        }
+        public void setThumbnailRecyclerView(Photo photo){
+            thumbnailViewComponentAdapter = itemView.findViewById(R.id.ContainerThumbnailRecycleView);
+            thumbnailViewComponentAdapter.setLayoutManager(
+                    new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+            ThumbnailViewComponentAdapter adapter = new ThumbnailViewComponentAdapter(context, photo.getRecon_list(),photo.getRecon_list_uri());
+            thumbnailViewComponentAdapter.setAdapter(adapter);
+        }
+        protected void setOriginalImage(Photo photo){
+            mDateTextView.setText(photo.getSaved_at());
             //クリックした際の挙動をセット
-            AlbumImageTapHandler albumImageTapHandler = new AlbumImageTapHandler(context,"testId");
+            AlbumImageTapHandler albumImageTapHandler = new AlbumImageTapHandler(context,photo.getId());
             imageView.setOnLongClickListener(albumImageTapHandler);
             // イメージのセット．汎用化できそうですな
-            File imageDirectory = new File(context.getFilesDir(), originalImageUri);
+            File imageDirectory = new File(context.getFilesDir(), photo.getSourceOriginalUri());
             File imageFile = imageDirectory.listFiles()[0];
             if (imageFile.exists()) {
                 Uri imageUri = Uri.fromFile(imageFile);
-                // 画像ファイルが存在する場合
-                //不具合があるならbitmapに落とす．
-                // imageView.setImageURI(imageUri);
-                // Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-                // imageView.setImageBitmap(bitmap);
                 Glide.with(context)
                         .load(imageUri)
                         .override(screenWidth)
@@ -93,14 +136,6 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
                 //TODO: 画像が見つからないときの対応
                 Log.w("TEST", "missing original lImage!");
             }
-        }
-        public void setThumbnailRecyclerView(Thumbnail thumbnail) {
-            // findbyIDは毎回呼び出す必要がある
-            thumbnailViewComponentAdapter = itemView.findViewById(R.id.ContainerThumbnailRecycleView);
-            thumbnailViewComponentAdapter
-                    .setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-            ThumbnailViewComponentAdapter adapter = new ThumbnailViewComponentAdapter(context, thumbnail);
-            thumbnailViewComponentAdapter.setAdapter(adapter);
         }
     }
 }

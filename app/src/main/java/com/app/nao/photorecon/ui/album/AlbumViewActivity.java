@@ -60,7 +60,11 @@ public class AlbumViewActivity extends AppCompatActivity {
 
         mAlbumRecyclerView = findViewById(R.id.ContainerRecycleView);
         mAlbumRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mAlbumRecyclerView.setAdapter((new AlbumViewComponentAdapter(this,mSourceImageUris, mThumbnails, mRecognitionDate)));
+        //TODO:もうここ直接photo渡したほうがいいんじゃない？
+        // mAlbumRecyclerView.setAdapter((new AlbumViewComponentAdapter(this,mSourceImageUris, mThumbnails, mRecognitionDate)));
+        //やってみる
+        mAlbumRecyclerView.setAdapter((new AlbumViewComponentAdapter(this,mPhotoList)));
+
     }
 
     private void setFiles(){

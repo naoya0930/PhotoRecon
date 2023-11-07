@@ -13,17 +13,26 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.nao.photorecon.R;
+import com.app.nao.photorecon.model.entity.SegmentedPhoto;
 import com.bumptech.glide.Glide;
 
 import java.io.File;
+import java.util.List;
 
 public class ThumbnailViewComponentAdapter extends RecyclerView.Adapter<ThumbnailViewComponentAdapter.ThumbnailViewHolder> {
 
     private Context context;
-    private Thumbnail thumbnail;
-    protected ThumbnailViewComponentAdapter(Context context, Thumbnail thumbnail){
-        this.context = context;
-        this.thumbnail = thumbnail;
+    // private Thumbnail thumbnail;
+    private List<SegmentedPhoto> mSegmentedPhoto;
+    private String mSegmentedImageUri;
+//    protected ThumbnailViewComponentAdapter(Context context, Thumbnail thumbnail){
+//        this.context = context;
+//        this.thumbnail = thumbnail;
+//    }
+    public ThumbnailViewComponentAdapter(Context context, List<SegmentedPhoto> segmentedPhoto,String segmentedImageUri){
+        this.context =context;
+        this.mSegmentedPhoto = segmentedPhoto;
+        this.mSegmentedImageUri = segmentedImageUri;
     }
 
 
@@ -33,18 +42,25 @@ public class ThumbnailViewComponentAdapter extends RecyclerView.Adapter<Thumbnai
         return new ThumbnailViewComponentAdapter.ThumbnailViewHolder(view);
     }
 
+//    @Override
+//    public void onBindViewHolder(ThumbnailViewComponentAdapter.ThumbnailViewHolder holder, int position) {
+//        String segmentImageUri =thumbnail.thumbnailImageUris.get(position);
+//        String segmentClassName = thumbnail.thumbnailClassnameLists.get(position);
+//        holder.setObjects(segmentImageUri,segmentClassName);
+//    }
     @Override
     public void onBindViewHolder(ThumbnailViewComponentAdapter.ThumbnailViewHolder holder, int position) {
-        String segmentImageUri =thumbnail.thumbnailImageUris.get(position);
-        String segmentClassName = thumbnail.thumbnailClassnameLists.get(position);
-        holder.setObjects(segmentImageUri,segmentClassName);
-
+        //String segmentImageUri =thumbnail.thumbnailImageUris.get(position);
+        //TODO: ここをメソッド切り分けするか検討
+        String segmentedImageUri = mSegmentedImageUri + "/" + position +".JPEG";
+        String segmentClassName = mSegmentedPhoto.get(position).getCategorization_name();
+        holder.setObjects(segmentedImageUri,segmentClassName);
     }
 
     @Override
     public int getItemCount() {
         //TODO:ユニークでない書き方しているの修正．クラス側にメソッドいれても良い．
-        return thumbnail.thumbnailImageUris.size();
+        return mSegmentedPhoto.size();
     }
 
     public class ThumbnailViewHolder extends RecyclerView.ViewHolder {

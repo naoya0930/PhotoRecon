@@ -23,10 +23,12 @@ public class ThumbnailViewComponentAdapter extends RecyclerView.Adapter<Thumbnai
     private Context context;
     private List<SegmentedPhoto> mSegmentedPhoto;
     private String mSegmentedImageUri;
-    public ThumbnailViewComponentAdapter(Context context, List<SegmentedPhoto> segmentedPhoto,String segmentedImageUri){
+    private BoxPaintView mBoxPaintView;
+    public ThumbnailViewComponentAdapter(Context context, List<SegmentedPhoto> segmentedPhoto,String segmentedImageUri,BoxPaintView boxPaintView){
         this.context =context;
         this.mSegmentedPhoto = segmentedPhoto;
         this.mSegmentedImageUri = segmentedImageUri;
+        this.mBoxPaintView = boxPaintView;
     }
 
 
@@ -40,8 +42,8 @@ public class ThumbnailViewComponentAdapter extends RecyclerView.Adapter<Thumbnai
     public void onBindViewHolder(ThumbnailViewComponentAdapter.ThumbnailViewHolder holder, int position) {
         //TODO: ここをメソッド切り分けするか検討
         String segmentedImageUri = mSegmentedImageUri + "/" + position +".JPEG";
-        String segmentClassName = mSegmentedPhoto.get(position).getCategorization_name();
-        holder.setObjects(segmentedImageUri,segmentClassName);
+        // String segmentClassName = mSegmentedPhoto.get(position).getCategorization_name();
+        holder.setObjects(segmentedImageUri,mSegmentedPhoto.get(position));
     }
 
     @Override
@@ -58,7 +60,11 @@ public class ThumbnailViewComponentAdapter extends RecyclerView.Adapter<Thumbnai
             objectTextView = itemView.findViewById(R.id.objectTextView);
             objectImageView = itemView.findViewById(R.id.objectImageView);
         }
-        public void setObjects(String imageUri,String className) {
+        public void setObjects(String imageUri,SegmentedPhoto segmentedPhoto) {
+            // タップしたときの挙動を追加
+            ThumbnailTapComponentAdapter thumbnailTapComponentAdapter =
+                    new ThumbnailTapComponentAdapter(context,segmentedPhoto,mBoxPaintView);
+            objectImageView.setOnClickListener(thumbnailTapComponentAdapter);
             File imageFile = new File(context.getFilesDir(), imageUri);
             if (imageFile.getAbsoluteFile().exists()) {
                 Uri thumbnailUri = Uri.fromFile(imageFile);
@@ -70,7 +76,7 @@ public class ThumbnailViewComponentAdapter extends RecyclerView.Adapter<Thumbnai
                 // TODO:errorハンドリング
                 Log.w("TEST","missing thumbnail Image!");
             }
-            objectTextView.setText(className);
+            objectTextView.setText(segmentedPhoto.getCategorization_name());
         }
     }
 }

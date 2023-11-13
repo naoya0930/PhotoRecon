@@ -5,24 +5,17 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.util.Log;
 import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
-import com.app.nao.photorecon.MainActivity;
+
 import com.app.nao.photorecon.model.usecase.DeletePhotoFromLocalFile;
 import com.app.nao.photorecon.model.usecase.DeletePhotoFromRealm;
 
 import org.bson.types.ObjectId;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.RegEx;
 
 
 public class AlbumImageTapHandler implements View.OnLongClickListener{

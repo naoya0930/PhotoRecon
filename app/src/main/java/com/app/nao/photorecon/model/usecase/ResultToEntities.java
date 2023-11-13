@@ -31,7 +31,6 @@ public class ResultToEntities extends RealmDAO<Photo> {
         ArrayList<String> clss = new ArrayList<>(mSegmentedClass.getClassname());
 
         for(Result r: res){
-            // categorized nameを持ってくる
             SegmentedPhoto p = new SegmentedPhoto();
             p.setCategorization_id(r.getClassIndex());
             p.setCategorization_name(clss.get(r.getClassIndex()));
@@ -49,13 +48,3 @@ public class ResultToEntities extends RealmDAO<Photo> {
         return photo;
     }
 }
-/*
-    private int categorization_id;
-    private String categorization_name;
-    // recognized image local uri
-    private RealmList<String> recon_image_uri;
-    //detected info from source image
-    private Rect rect;
-
-    private float score;
- */

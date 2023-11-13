@@ -56,12 +56,12 @@ public class PrePostProcessor {
 
         // Do an argsort on the confidence scores, from high to low.
         Collections.sort(boxes,
-                new Comparator<Result>() {
-                    @Override
-                    public int compare(Result o1, Result o2) {
-                        return o1.score.compareTo(o2.score);
-                    }
-                });
+            new Comparator<Result>() {
+                @Override
+                public int compare(Result o1, Result o2) {
+                    return o1.score.compareTo(o2.score);
+                }
+        });
 
         ArrayList<Result> selected = new ArrayList<>();
         boolean[] active = new boolean[boxes.size()];

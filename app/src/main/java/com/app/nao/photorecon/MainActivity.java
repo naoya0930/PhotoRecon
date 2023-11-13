@@ -177,9 +177,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         final Button buttonActiveAlbum = findViewById(R.id.activeAlbumButton);
         buttonActiveAlbum.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //アルバム起動
-                //これは別のインテントで
-
                 final Intent intent = new Intent(MainActivity.this, AlbumViewActivity.class);
                 startActivity(intent);
             }
@@ -317,13 +314,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                                     mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), mBitmap.getHeight(), matrix, true);
                                     mImageView.setImageBitmap(mBitmap);
                                     cursor.close();
-
                                     // 推論開始
                                     // Mresultviewarraylistが結果を持ってる．
                                     // mButtonDetect.setEnabled(false);
                                     mProgressBar.setVisibility(ProgressBar.VISIBLE);
                                     //mButtonDetect.setText(getString(R.string.run_model));
-
                                     mImgScaleX = (float)mBitmap.getWidth() / PrePostProcessor.mInputWidth;
                                     mImgScaleY = (float)mBitmap.getHeight() / PrePostProcessor.mInputHeight;
 
@@ -358,9 +353,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // TODO:imageVIewへの適応をここでやってしまっている．要修正
         final ArrayList<Result> results =  PrePostProcessor.outputsToNMSPredictions(outputs, mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY);
         // サムネイルを作成する．//メモリにおいておくには，最大サイズがでかいので対処する
-        // Log.i("TEST","mBitmap size:"+mBitmap.getHeight()+" / "+mBitmap.getHeight());
-        // Log.i("TEST","mImage view size:"+mImageView.getHeight()+" / "+mImageView.getHeight());
-        // Log.i("TEST","resizedBitmap size:"+resizedBitmap.getHeight()+" / "+resizedBitmap.getHeight());
         // 元の画像 mBitmap 短い方に圧縮
         // Image View 1080*1080
         // resized bitmap 640*640
@@ -389,8 +381,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
 
         runOnUiThread(() -> {
-            // mButtonDetect.setEnabled(true);
-            // mButtonDetect.setText(getString(R.string.detect));
             mProgressBar.setVisibility(ProgressBar.INVISIBLE);
             mResultView.setResults(results);
             mResultView.invalidate();

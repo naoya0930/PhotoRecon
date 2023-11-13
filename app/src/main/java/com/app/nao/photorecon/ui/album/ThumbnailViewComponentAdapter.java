@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -52,18 +53,19 @@ public class ThumbnailViewComponentAdapter extends RecyclerView.Adapter<Thumbnai
     }
 
     public class ThumbnailViewHolder extends RecyclerView.ViewHolder {
+        private LinearLayout thumbnailListLayout;
         private TextView objectTextView;
         private ImageView objectImageView;
-
         public ThumbnailViewHolder(View itemView) {
             super(itemView);
             objectTextView = itemView.findViewById(R.id.objectTextView);
             objectImageView = itemView.findViewById(R.id.objectImageView);
+            thumbnailListLayout = itemView.findViewById(R.id.thumbnailListLayout);
         }
         public void setObjects(String imageUri,SegmentedPhoto segmentedPhoto) {
             // タップしたときの挙動を追加
             ThumbnailTapComponentAdapter thumbnailTapComponentAdapter =
-                    new ThumbnailTapComponentAdapter(context,segmentedPhoto,mBoxPaintView);
+                    new ThumbnailTapComponentAdapter(context,thumbnailListLayout,segmentedPhoto,mBoxPaintView);
             objectImageView.setOnClickListener(thumbnailTapComponentAdapter);
             File imageFile = new File(context.getFilesDir(), imageUri);
             if (imageFile.getAbsoluteFile().exists()) {

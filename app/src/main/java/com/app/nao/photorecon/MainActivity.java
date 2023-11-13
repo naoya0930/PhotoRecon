@@ -364,21 +364,27 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // mIvScaleX=0.27
         // mStartX=0.0
         // mStartY=134.99997
-        mPreSegmentedThumbnails =  new ArrayList<Bitmap>(snapRectanglePhoto.makeSegmentedImages(
-                mIvScaleX,mIvScaleY,
-                mStartX,mStartY,
-                mBitmap, results));
+        // ImageView用に整形されていたものをもとに戻す作業
+        mPreSegmentedThumbnails =  new ArrayList<Bitmap>(
+                snapRectanglePhoto.makeSegmentedImages(
+                    mIvScaleX,mIvScaleY,
+                    mStartX,mStartY,
+                    mBitmap, results));
+        List<Result> savedResult = new ArrayList<Result>(
+                snapRectanglePhoto.makeSegmentedRectangle(
+                        mIvScaleX,mIvScaleY,
+                        mStartX,mStartY,
+                        results));
         // まだ保存しない
         // mPhotoに突っ込む
+        // NOTE:ここで値がバグってる
         mPhoto = resultToEntities.resultToPhoto(
-                results,
+                new ArrayList<>(savedResult),
                 mSelectedImageUri.toString(),
                 //URIでパースすると勝手に絶対パスに変換しよる（多分）
                 mSegmentedClass,
                 mPtlFileName.toString()
-                );
-        
-
+        );
 
         runOnUiThread(() -> {
             mProgressBar.setVisibility(ProgressBar.INVISIBLE);

@@ -41,7 +41,6 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
 
     @Override
     public void onBindViewHolder(AlbumViewComponentAdapter.ObjectViewHolder holder, int position) {
-        //ここから：ここをmPhotoList使った形に直す
         Photo photo = mPhotoList.get(position);
         holder.setOriginalImage(photo);
         holder.setThumbnailRecyclerView(photo);
@@ -54,18 +53,23 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
         private ImageView imageView;
         private TextView mDateTextView;
         private RecyclerView thumbnailViewComponentAdapter;
+        private BoxPaintView mBoxPaintView;
 
         public ObjectViewHolder(View itemView) {
             super(itemView);
             mDateTextView = itemView.findViewById(R.id.dateText);
             imageView = itemView.findViewById(R.id.imageView);
+            mBoxPaintView = itemView.findViewById(R.id.boxPaintView);
         }
 
         public void setThumbnailRecyclerView(Photo photo){
             thumbnailViewComponentAdapter = itemView.findViewById(R.id.ContainerThumbnailRecycleView);
             thumbnailViewComponentAdapter.setLayoutManager(
                     new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-            ThumbnailViewComponentAdapter adapter = new ThumbnailViewComponentAdapter(context, photo.getRecon_list(),photo.getRecon_list_uri());
+            ThumbnailViewComponentAdapter adapter =
+                    new ThumbnailViewComponentAdapter(context, photo.getRecon_list(),photo.getRecon_list_uri(),mBoxPaintView);
+            // タップ時のviewへの参照させるために，カスタムViewをここで渡しておく．
+
             thumbnailViewComponentAdapter.setAdapter(adapter);
         }
         protected void setOriginalImage(Photo photo){

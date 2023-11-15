@@ -168,10 +168,11 @@ public class FloatingButtonListener implements View.OnClickListener {
         builder.show();
         //
     }
-    private void resetSearch(){
+    public void resetSearch(){
         isSearchActiveByDate =false;
         isSearchActiveByCategory =false;
         mDatePair=null;
         checkedItems =null;
+        ((AlbumViewActivity)context).updateRecyclerView(((AlbumViewActivity)context).getAllPhotoList());
     }
 }

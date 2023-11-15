@@ -60,9 +60,13 @@ public class AlbumImageTapHandler implements View.OnLongClickListener{
                             deletePhotoFromLocalFile.deletePhotoFromLocalFile(view.getContext(),albumId.toString());
                             //TODO:描写を更新する．もっといい方法があるかもしれない．
                             //TODO:この方法のまま実装するなら，アニメーションは変更すること．
+
                             final Intent intent = new Intent(view.getContext(), AlbumViewActivity.class);
                             view.getContext().startActivity(intent);
                             ((Activity) view.getContext()).finish();
+
+                            // TODO:こっちでもいい．ただし検索条件をリセットしないとUIが不自然.
+                            // ((AlbumViewActivity)context).updateRecyclerView(((AlbumViewActivity)context).getAllPhotoList());
                         }else{
                             Log.i("u_REALM ","削除処理に失敗しました．");
                         }

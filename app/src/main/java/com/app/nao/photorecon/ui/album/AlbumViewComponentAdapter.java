@@ -17,7 +17,6 @@ import com.app.nao.photorecon.R;
 import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.ui.util.ScreenInfo;
 import com.bumptech.glide.Glide;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
 import java.util.List;
@@ -30,6 +29,10 @@ public class AlbumViewComponentAdapter extends RecyclerView.Adapter<AlbumViewCom
 
     protected AlbumViewComponentAdapter(Context context, List<Photo> photoList){
         this.context = context;
+        this.mPhotoList =photoList;
+    }
+    //画面の更新用，後から変更できるようにしておく．
+    public void setPhotoList(List<Photo> photoList){
         this.mPhotoList =photoList;
     }
 

@@ -18,9 +18,14 @@ public class AlbumViewActivity extends AppCompatActivity {
 
     private RecyclerView mAlbumRecyclerView;
     private List<Photo> mPhotoList;
+    private List<Photo> mFilterdPhotoList;
     private LoadAllPhotoResult mLoadAllPhotoResult;
     private FloatingActionButton mFloatingActionButton;
+    private AlbumViewComponentAdapter mAlbumViewComponentAdapter;
 
+    List<Photo> getAllPhotoList(){
+        return mPhotoList;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,16 +33,24 @@ public class AlbumViewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_album_view);
 
         mLoadAllPhotoResult = new LoadAllPhotoResult();
-        mPhotoList = mLoadAllPhotoResult.getAllPhotoResult();
+        if(mPhotoList==null){
+            mPhotoList = mLoadAllPhotoResult.getAllPhotoResult();
+        }
 
 
         mAlbumRecyclerView = findViewById(R.id.ContainerRecycleView);
         mAlbumRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mAlbumViewComponentAdapter = new AlbumViewComponentAdapter(this,mPhotoList);
+        mAlbumRecyclerView.setAdapter(mAlbumViewComponentAdapter);
         mFloatingActionButton =findViewById(R.id.filterMenu);
-        mFloatingActionButton.setOnClickListener(new FloatingButtonListener(this));
+        mFloatingActionButton.setOnClickListener(new FloatingButtonListener(this, mPhotoList));
 
-        mAlbumRecyclerView.setAdapter((new AlbumViewComponentAdapter(this, mPhotoList)));
-
+    }
+    public void updateRecyclerView(List<Photo> photoList){
+        // this.mPhotoList = photoList;
+        mFilterdPhotoList = photoList;
+        mAlbumViewComponentAdapter.setPhotoList(mFilterdPhotoList);
+        mAlbumViewComponentAdapter.notifyDataSetChanged();
     }
 
 }

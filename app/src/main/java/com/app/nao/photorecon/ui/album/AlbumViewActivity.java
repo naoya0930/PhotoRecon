@@ -22,6 +22,7 @@ public class AlbumViewActivity extends AppCompatActivity {
     private LoadAllPhotoResult mLoadAllPhotoResult;
     private FloatingActionButton mFloatingActionButton;
     private AlbumViewComponentAdapter mAlbumViewComponentAdapter;
+    private FloatingButtonListener mFloatingButtonListener;
 
     List<Photo> getAllPhotoList(){
         return mPhotoList;
@@ -43,7 +44,8 @@ public class AlbumViewActivity extends AppCompatActivity {
         mAlbumViewComponentAdapter = new AlbumViewComponentAdapter(this,mPhotoList);
         mAlbumRecyclerView.setAdapter(mAlbumViewComponentAdapter);
         mFloatingActionButton =findViewById(R.id.filterMenu);
-        mFloatingActionButton.setOnClickListener(new FloatingButtonListener(this, mPhotoList));
+        mFloatingButtonListener  =new FloatingButtonListener(this,mPhotoList);
+        mFloatingActionButton.setOnClickListener(mFloatingButtonListener);
 
     }
     public void updateRecyclerView(List<Photo> photoList){
@@ -51,6 +53,10 @@ public class AlbumViewActivity extends AppCompatActivity {
         mFilterdPhotoList = photoList;
         mAlbumViewComponentAdapter.setPhotoList(mFilterdPhotoList);
         mAlbumViewComponentAdapter.notifyDataSetChanged();
+    }
+    //検索条件のリセット．mPhoto自体が更新されるときには必ず呼び出す．ex:photo削除時など
+    public void resetFilterSetting(){
+        mFloatingButtonListener.resetSearch();
     }
 
 }

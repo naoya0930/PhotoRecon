@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.View;
 
 import androidx.appcompat.app.AlertDialog;
@@ -19,6 +20,7 @@ import com.app.nao.photorecon.R;
 import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.model.entity.SegmentedPhoto;
 import com.app.nao.photorecon.model.usecase.FilterPhotoBySegmentedName;
+import com.app.nao.photorecon.ui.util.SpannableStringWithIcon;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -33,7 +35,9 @@ import java.util.Set;
 public class FloatingButtonListener implements View.OnClickListener {
     private Context context;
     private Pair<Long,Long> mDatePair;
-    private MaterialDatePicker<Long> mDatePicker;
+    private boolean isSearchActiveByDate = false;
+    private boolean isSearchActiveByCategory = false;
+    private boolean[] checkedItems;
     private List<Photo> mPhotoList;
 
     FloatingButtonListener(Context context, List<Photo> photoList){
@@ -52,19 +56,26 @@ public class FloatingButtonListener implements View.OnClickListener {
         AlertDialog.Builder builder = new AlertDialog.Builder((Activity) view.getContext());
         //TODO: ここstringファイルに記述
         builder.setTitle("検索");
-        CharSequence[] options = {"日付", "物体"};
+        //TODO:きったないので書き方考える．
+        CharSequence[] options = {
+                SpannableStringWithIcon.getSpannableStringWithIcon(context,"日付",
+                        (isSearchActiveByDate ? R.drawable.baseline_filter_alt_64 : R.drawable.baseline_filter_alt_off_64)),
+                SpannableStringWithIcon.getSpannableStringWithIcon(context,"物体",
+                        (isSearchActiveByCategory ? R.drawable.baseline_filter_alt_64 : R.drawable.baseline_filter_alt_off_64)),
+                "検索条件をクリア"};
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
                         showDateSelectDialog();
-
                         break;
                     case 1:
                         searchByReconCategoryDialog();
-
                         break;
+                    case 2:
+                        resetSearch();
+
                 }
             }
         });
@@ -76,22 +87,33 @@ public class FloatingButtonListener implements View.OnClickListener {
         //         MaterialDatePicker.Builder.dateRangePicker();
         // builder.setTheme(R.style.SubAppTheme);
         //MaterialDatePicker mDateRangePicker = builder.build();
-        MaterialDatePicker mDateRangePicker = MaterialDatePicker.Builder
-                .dateRangePicker()
-                .setTheme(R.style.ThemeOverlay_MaterialComponents_MaterialCalendar_Fullscreen)
-                .build();
-        mDateRangePicker.addOnPositiveButtonClickListener(
+        MaterialDatePicker dateRangePicker;
+        if(mDatePair==null) {
+            dateRangePicker = MaterialDatePicker.Builder
+                    .dateRangePicker()
+                    .setTheme(R.style.ThemeOverlay_MaterialComponents_MaterialCalendar_Fullscreen)
+                    .build();
+        }else{
+            dateRangePicker = MaterialDatePicker.Builder
+                    .dateRangePicker()
+                    .setTheme(R.style.ThemeOverlay_MaterialComponents_MaterialCalendar_Fullscreen)
+                    .setSelection(mDatePair)
+                    .build();
+        }
+
+        dateRangePicker.addOnPositiveButtonClickListener(
                 new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
             @Override
             public void onPositiveButtonClick(Pair<Long, Long> selection) {
                 // updateDateRangeTextView(selection.first, selection.second);
                 mDatePair = selection;
+                isSearchActiveByDate = true;
             }
         });
 
-        mDateRangePicker.show(
+        dateRangePicker.show(
                 ((AppCompatActivity)context).getSupportFragmentManager(),
-                mDateRangePicker.toString());
+                dateRangePicker.toString());
     }
     private void searchByReconCategoryDialog(){
         // TODO:assetのclasses.txtを呼ぶ方法を検討．たぶん今のままでいい...
@@ -105,7 +127,7 @@ public class FloatingButtonListener implements View.OnClickListener {
         }
         //ここまで
         Set<CharSequence> selectedCategoryNameSet = new HashSet<>();
-        final boolean[] checkedItems = new boolean[categorizedNameSet.size()];
+        if(checkedItems==null){checkedItems = new boolean[categorizedNameSet.size()];}
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Select Model");
@@ -114,6 +136,7 @@ public class FloatingButtonListener implements View.OnClickListener {
         builder.setMultiChoiceItems(options, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int whichItem, boolean isChecked) {
+                //TODO: 物体を削除するとcheckdIDの内容がめちゃくちゃになるので，対応する．削除に対しては検索条件をリセット？
                 checkedItems[whichItem] = isChecked;
             }
         });
@@ -129,7 +152,8 @@ public class FloatingButtonListener implements View.OnClickListener {
                 }
                 List<Photo> resPhoto =
                         FilterPhotoBySegmentedName.filterPhotoBySegmentedName (mPhotoList, selectedCategoryNameSet);
-                // TODO: resPhotoで更新したいがこれで大丈夫？．．．
+                // TODO: resPhotoで更新したいがこれで大丈夫？．．．->各変数を一回追っておく．
+                isSearchActiveByCategory = true;
                 ((AlbumViewActivity)context).updateRecyclerView(resPhoto);
             }
         });
@@ -143,5 +167,11 @@ public class FloatingButtonListener implements View.OnClickListener {
         });
         builder.show();
         //
+    }
+    private void resetSearch(){
+        isSearchActiveByDate =false;
+        isSearchActiveByCategory =false;
+        mDatePair=null;
+        checkedItems =null;
     }
 }

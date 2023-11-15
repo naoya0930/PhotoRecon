@@ -17,6 +17,7 @@ import com.app.nao.photorecon.R;
 import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.ui.util.ScreenInfo;
 import com.bumptech.glide.Glide;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
 import java.util.List;

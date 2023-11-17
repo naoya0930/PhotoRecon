@@ -1,4 +1,4 @@
-package com.app.nao.photorecon;
+package com.app.nao.photorecon.ui.main;
 
 import android.graphics.Rect;
 

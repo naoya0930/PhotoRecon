@@ -2,13 +2,9 @@ package com.app.nao.photorecon.model.usecase;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.util.Log;
 
-import com.app.nao.photorecon.Result;
-import com.app.nao.photorecon.model.dao.RealmDAO;
-import com.app.nao.photorecon.model.entity.Photo;
+import com.app.nao.photorecon.ui.main.Result;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 

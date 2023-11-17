@@ -1,23 +1,13 @@
 package com.app.nao.photorecon.model.usecase;
 
-import android.graphics.Bitmap;
-import android.graphics.Paint;
-
-import com.app.nao.photorecon.PrePostProcessor;
 import com.app.nao.photorecon.model.dao.RealmDAO;
 import com.app.nao.photorecon.model.entity.Photo;
-import com.app.nao.photorecon.Result;
+import com.app.nao.photorecon.ui.main.Result;
 import com.app.nao.photorecon.model.entity.SegmentedClass;
 import com.app.nao.photorecon.model.entity.SegmentedPhoto;
 import com.app.nao.photorecon.model.repository.LocalFileUtil;
 
-import org.bson.types.ObjectId;
-
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
-
-import io.realm.RealmList;
 
 
 public class ResultToEntities extends RealmDAO<Photo> {

@@ -1,4 +1,4 @@
-package com.app.nao.photorecon;
+package com.app.nao.photorecon.ui.main;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -34,18 +33,15 @@ import org.pytorch.Tensor;
 import org.pytorch.torchvision.TensorImageUtils;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
+import com.app.nao.photorecon.R;
 import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.model.entity.SegmentedClass;
 import com.app.nao.photorecon.model.usecase.ResultToEntities;
@@ -53,6 +49,7 @@ import com.app.nao.photorecon.model.usecase.SaveBitmapToDataDirectory;
 import com.app.nao.photorecon.model.usecase.SavePhoto;
 import com.app.nao.photorecon.model.usecase.SnapRectanglePhoto;
 import com.app.nao.photorecon.ui.album.AlbumViewActivity;
+import com.app.nao.photorecon.ui.util.AssetFileExplorer;
 import com.app.nao.photorecon.ui.util.DateManager;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
@@ -78,24 +75,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private float mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY;
 
 
-    public static String assetFilePath(Context context, String assetName) throws IOException {
-        File file = new File(context.getFilesDir(), assetName);
-        if (file.exists() && file.length() > 0) {
-            return file.getAbsolutePath();
-        }
 
-        try (InputStream is = context.getAssets().open(assetName)) {
-            try (OutputStream os = new FileOutputStream(file)) {
-                byte[] buffer = new byte[4 * 1024];
-                int read;
-                while ((read = is.read(buffer)) != -1) {
-                    os.write(buffer, 0, read);
-                }
-                os.flush();
-            }
-            return file.getAbsolutePath();
-        }
-    }
     // TODO:ここ以下２つのメソッドをまとめる
     protected boolean checkManageExtraStoragePermission(){
         if (ContextCompat.checkSelfPermission(
@@ -257,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         });
         //初期化
         try {
-            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), mPtlFileName.toString()));
+            mModule = LiteModuleLoader.load(AssetFileExplorer.assetFilePath(getApplicationContext(), mPtlFileName.toString()));
             BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));
             String line;
             List<String> classes = new ArrayList<>();
@@ -275,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     // Notice: Do not execute this function every frame because it takes time to execute.
     private void updateModel(){
         try {
-            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), mPtlFileName.toString()));
+            mModule = LiteModuleLoader.load(AssetFileExplorer.assetFilePath(getApplicationContext(), mPtlFileName.toString()));
             BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));
             String line;
             List<String> classes = new ArrayList<>();

@@ -4,7 +4,7 @@
 // This source code is licensed under the BSD-style license found in the
 // LICENSE file in the root directory of this source tree.
 
-package com.app.nao.photorecon;
+package com.app.nao.photorecon.ui.main;
 
 import android.graphics.Rect;
 
@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
-// import com.app.nao.photorecon.Result;
+// import com.app.nao.photorecon.ui.main.Result;
 
 //class Result {
 //    int classIndex;

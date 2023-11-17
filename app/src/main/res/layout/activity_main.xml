@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.app.nao.photorecon.ResultView
+    <com.app.nao.photorecon.ui.main.ResultView
         android:id="@+id/resultView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -114,7 +114,7 @@
 
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/activeCameraButton"
+        android:id="@+id/referenceDialogButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_column="1"

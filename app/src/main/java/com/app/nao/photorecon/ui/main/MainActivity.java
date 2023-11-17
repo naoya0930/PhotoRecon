@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return file.getAbsolutePath();
         }
     }
-// TODO:ここ以下２つのメソッドをまとめる
+    // TODO:ここ以下２つのメソッドをまとめる
     protected boolean checkManageExtraStoragePermission(){
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.MANAGE_EXTERNAL_STORAGE) !=
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         super.onCreate(savedInstanceState);
         // TODO:android 31以降は無視されるので注意
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
         }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
@@ -163,17 +163,18 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         realm_instance.close();
 
         // set Activites/service
+        //TODO: これを依存性注入で記述？
         resultToEntities = new ResultToEntities();
         snapRectanglePhoto = new SnapRectanglePhoto();
         saveBitmapToDataDirectory = new SaveBitmapToDataDirectory();
-
-        // @string: 写真を取る
-        final Button buttonLive = findViewById(R.id.activeCameraButton);
-        buttonLive.setOnClickListener(new View.OnClickListener() {
+        // referenceDialog
+        final Button referenceDialogButton = findViewById(R.id.referenceDialogButton);
+        referenceDialogButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //オリジナルの写真アプリに各種追加．
+
             }
         });
+        //Album Intent
         final Button buttonActiveAlbum = findViewById(R.id.activeAlbumButton);
         buttonActiveAlbum.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -181,17 +182,17 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 startActivity(intent);
             }
         });
+        // select Photo Intent
         final Button buttonSelectPhoto = findViewById(R.id.selectPhotoButton);
         buttonSelectPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //写真を選択させる．intent起動
                 if(checkReadMediaImagePermission()) {
-                    Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+                    Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
                     activityResultLauncher.launch(pickPhoto);
                     //結果をresultviewに表示
                 }else{
-
                 }
 
             }
@@ -225,35 +226,35 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
         });
 
-         final Button buttonSelectModel = findViewById(R.id.selectModelButton);
-         buttonSelectModel.setOnClickListener(new View.OnClickListener() {
-             public void onClick(View v) {
-                 mResultView.setVisibility(View.INVISIBLE);
-                 AssetManager assetManager = getResources().getAssets();
-                 String[] assetList =null;
-                 try {
-                     assetList = assetManager.list("");
-                 } catch (IOException e) {
-                     e.printStackTrace();
-                 }
-                 List<CharSequence> modelFileList =new ArrayList<>();
-                     for (String modelName : assetList)
-                         if (modelName.endsWith(".ptl"))
-                             modelFileList.add(modelName);
+        final Button buttonSelectModel = findViewById(R.id.selectModelButton);
+        buttonSelectModel.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mResultView.setVisibility(View.INVISIBLE);
+                AssetManager assetManager = getResources().getAssets();
+                String[] assetList =null;
+                try {
+                    assetList = assetManager.list("");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                List<CharSequence> modelFileList =new ArrayList<>();
+                for (String modelName : assetList)
+                    if (modelName.endsWith(".ptl"))
+                        modelFileList.add(modelName);
 
-                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                 builder.setTitle("Select Model");
-                 CharSequence[] options = modelFileList.toArray(new CharSequence[modelFileList.size()]);
-                 builder.setSingleChoiceItems(options, 0, new DialogInterface.OnClickListener() {
-                     @Override
-                     public void onClick(DialogInterface dialog, int whichButton) {
-                         mPtlFileName = options[whichButton];
-                         updateModel();
-                     }
-                 });
-                 builder.show();
-             }
-         });
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Select Model");
+                CharSequence[] options = modelFileList.toArray(new CharSequence[modelFileList.size()]);
+                builder.setSingleChoiceItems(options, 0, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        mPtlFileName = options[whichButton];
+                        updateModel();
+                    }
+                });
+                builder.show();
+            }
+        });
         //初期化
         try {
             mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), mPtlFileName.toString()));
@@ -290,54 +291,54 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
     }
     private final ActivityResultLauncher<Intent> activityResultLauncher =
-                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            activityResult -> {
-                    // requestCode, resultCode, data
-                if(activityResult.getResultCode() !=RESULT_CANCELED) {
-                    if (activityResult.getResultCode() == Activity.RESULT_OK) {
-                        if (activityResult.getData() != null) {
-                            //結果を受け取った後の処理
-                            mSelectedImageUri = activityResult.getData().getData();
-                            String[] filePathColumn = {MediaStore.Images.Media.DATA};
-                            if (mSelectedImageUri != null) {
-                                Cursor cursor = getContentResolver().query(mSelectedImageUri,
-                                        filePathColumn, null, null, null);
-                                if (cursor != null) {
-                                    //画像の配置
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    activityResult -> {
+                        // requestCode, resultCode, data
+                        if(activityResult.getResultCode() !=RESULT_CANCELED) {
+                            if (activityResult.getResultCode() == Activity.RESULT_OK) {
+                                if (activityResult.getData() != null) {
+                                    //結果を受け取った後の処理
+                                    mSelectedImageUri = activityResult.getData().getData();
+                                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                                    if (mSelectedImageUri != null) {
+                                        Cursor cursor = getContentResolver().query(mSelectedImageUri,
+                                                filePathColumn, null, null, null);
+                                        if (cursor != null) {
+                                            //画像の配置
 
-                                    cursor.moveToFirst();
-                                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                                    String picturePath = cursor.getString(columnIndex);
-                                    mBitmap = BitmapFactory.decodeFile(picturePath);
-                                    Matrix matrix = new Matrix();
-                                    matrix.postRotate(0.0f);
-                                    mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), mBitmap.getHeight(), matrix, true);
-                                    mImageView.setImageBitmap(mBitmap);
-                                    cursor.close();
-                                    // 推論開始
-                                    // Mresultviewarraylistが結果を持ってる．
-                                    // mButtonDetect.setEnabled(false);
-                                    mProgressBar.setVisibility(ProgressBar.VISIBLE);
-                                    //mButtonDetect.setText(getString(R.string.run_model));
-                                    mImgScaleX = (float)mBitmap.getWidth() / PrePostProcessor.mInputWidth;
-                                    mImgScaleY = (float)mBitmap.getHeight() / PrePostProcessor.mInputHeight;
+                                            cursor.moveToFirst();
+                                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                                            String picturePath = cursor.getString(columnIndex);
+                                            mBitmap = BitmapFactory.decodeFile(picturePath);
+                                            Matrix matrix = new Matrix();
+                                            matrix.postRotate(0.0f);
+                                            mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), mBitmap.getHeight(), matrix, true);
+                                            mImageView.setImageBitmap(mBitmap);
+                                            cursor.close();
+                                            // 推論開始
+                                            // Mresultviewarraylistが結果を持ってる．
+                                            // mButtonDetect.setEnabled(false);
+                                            mProgressBar.setVisibility(ProgressBar.VISIBLE);
+                                            //mButtonDetect.setText(getString(R.string.run_model));
+                                            mImgScaleX = (float)mBitmap.getWidth() / PrePostProcessor.mInputWidth;
+                                            mImgScaleY = (float)mBitmap.getHeight() / PrePostProcessor.mInputHeight;
 
-                                    mIvScaleX = (mBitmap.getWidth() > mBitmap.getHeight() ? (float)mImageView.getWidth() / mBitmap.getWidth() : (float)mImageView.getHeight() / mBitmap.getHeight());
-                                    mIvScaleY  = (mBitmap.getHeight() > mBitmap.getWidth() ? (float)mImageView.getHeight() / mBitmap.getHeight() : (float)mImageView.getWidth() / mBitmap.getWidth());
+                                            mIvScaleX = (mBitmap.getWidth() > mBitmap.getHeight() ? (float)mImageView.getWidth() / mBitmap.getWidth() : (float)mImageView.getHeight() / mBitmap.getHeight());
+                                            mIvScaleY  = (mBitmap.getHeight() > mBitmap.getWidth() ? (float)mImageView.getHeight() / mBitmap.getHeight() : (float)mImageView.getWidth() / mBitmap.getWidth());
 
-                                    mStartX = (mImageView.getWidth() - mIvScaleX * mBitmap.getWidth())/2;
-                                    mStartY = (mImageView.getHeight() -  mIvScaleY * mBitmap.getHeight())/2;
+                                            mStartX = (mImageView.getWidth() - mIvScaleX * mBitmap.getWidth())/2;
+                                            mStartY = (mImageView.getHeight() -  mIvScaleY * mBitmap.getHeight())/2;
 
-                                    Thread thread = new Thread(MainActivity.this);
-                                    thread.start();
+                                            Thread thread = new Thread(MainActivity.this);
+                                            thread.start();
+                                        }
+                                    }
+                                } else {
+
                                 }
                             }
-                        } else {
-
                         }
-                    }
-                }
-            });
+                    });
 
     @Override
     public void run() {
@@ -345,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         final Tensor inputTensor = TensorImageUtils.bitmapToFloat32Tensor(resizedBitmap, PrePostProcessor.NO_MEAN_RGB, PrePostProcessor.NO_STD_RGB);
         // IValue[] outputTuple = mModule.forward(IValue.from(inputTensor)).toTuple(); torch.nn.Module
         IValue[] outputTuple = mModule.runMethod("forward",IValue.from(inputTensor)).toTuple();
-        
+
         // This logcast is invalid, it was used to test a method included in torchscript.
         // Log.i("torch_log",""+mModule.runMethod("test_sample",IValue.from(2)).toString());
         final Tensor outputTensor = outputTuple[0].toTensor();
@@ -367,9 +368,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // ImageView用に整形されていたものをもとに戻す作業
         mPreSegmentedThumbnails =  new ArrayList<Bitmap>(
                 snapRectanglePhoto.makeSegmentedImages(
-                    mIvScaleX,mIvScaleY,
-                    mStartX,mStartY,
-                    mBitmap, results));
+                        mIvScaleX,mIvScaleY,
+                        mStartX,mStartY,
+                        mBitmap, results));
         List<Result> savedResult = new ArrayList<Result>(
                 snapRectanglePhoto.makeSegmentedRectangle(
                         mIvScaleX,mIvScaleY,

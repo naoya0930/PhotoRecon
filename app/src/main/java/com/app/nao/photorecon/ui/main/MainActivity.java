@@ -299,11 +299,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     public void run() {
         Bitmap resizedBitmap = Bitmap.createScaledBitmap(mBitmap, PrePostProcessor.mInputWidth, PrePostProcessor.mInputHeight, true);
         final Tensor inputTensor = TensorImageUtils.bitmapToFloat32Tensor(resizedBitmap, PrePostProcessor.NO_MEAN_RGB, PrePostProcessor.NO_STD_RGB);
-        // IValue[] outputTuple = mModule.forward(IValue.from(inputTensor)).toTuple(); torch.nn.Module
         IValue[] outputTuple = mModule.runMethod("forward",IValue.from(inputTensor)).toTuple();
 
-        // This logcast is invalid, it was used to test a method included in torchscript.
-        // Log.i("torch_log",""+mModule.runMethod("test_sample",IValue.from(2)).toString());
         final Tensor outputTensor = outputTuple[0].toTensor();
         final float[] outputs = outputTensor.getDataAsFloatArray();
         // TODO:imageVIewへの適応をここでやってしまっている．要修正

@@ -150,29 +150,14 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mResultView = findViewById(R.id.resultView);
         mResultView.setVisibility(View.INVISIBLE);
 
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mProgressBar = findViewById(R.id.progressBar);
         mRegisterButton = findViewById(R.id.registerPhotoButton);
         mRegisterButton.setEnabled(false);
 
-        // Realm test setting
         Realm.init(this); // context, usually an Activity or Application
-        RealmConfiguration config = new RealmConfiguration.Builder()
-                .name("default-realm")
-                .allowQueriesOnUiThread(true)
-                .allowWritesOnUiThread(true)
-                .compactOnLaunch()
-                .inMemory()   //インメモリ実行すると，closeで破棄する．
-                .build();
-        Realm.setDefaultConfiguration(config);
-        Realm realm_instance = Realm.getDefaultInstance();
-        Log.v("EXAMPLE","Successfully opened the default realm at: " + realm_instance.getPath());
-        realm_instance.close();
-
-        // set Activites/service
-        //TODO: これを依存性注入で記述？
         resultToEntities = new ResultToEntities();
         snapRectanglePhoto = new SnapRectanglePhoto();
-        // saveBitmapToDataDirectory = new SaveBitmapToDataDirectory();
+
         // referenceDialog
         final Button referenceDialogButton = findViewById(R.id.referenceDialogButton);
         referenceDialogButton.setOnClickListener(new View.OnClickListener() {
@@ -195,8 +180,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 //ローカルファイルに保存する
                 //日付をセットする．
                 mPhoto.setSaved_at(DateManager.getLocalDate());
-                // saveBitmapToDataDirectory.saveSegmentBitmapToDirectory(v.getContext(), mPreSegmentedThumbnails);
-                // saveBitmapToDataDirectory.saveOriginalBitmapToDiarectory(v.getContext(),mBitmap);
                 // resultの情報をもとにrealmに情報を登録する．
                 mSavePhoto = new SavePhoto(mPhoto);
                 mSavePhoto.saveSegmentBitmapToDirectory(v.getContext(),mPreSegmentedThumbnails);
@@ -205,8 +188,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 mRegisterButton.setEnabled(false);
 
                 // TODO: 成功，失敗の結果をイベント通知
-                // Log.i("TEST","mPreSegmentedThumbnails:  "+ mPreSegmentedThumbnails.size());
-                // Log.i("TEST","mPhoto_modelname:  "+mPhoto.getModel_name());
                 mSelectedImageUri = null;
             }
         });

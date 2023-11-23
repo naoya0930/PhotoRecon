@@ -1,5 +1,6 @@
 package com.app.nao.photorecon.ui.main;
 
+import androidx.activity.ComponentActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
@@ -34,6 +35,7 @@ import org.pytorch.torchvision.TensorImageUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,29 +54,59 @@ import com.app.nao.photorecon.ui.album.AlbumViewActivity;
 import com.app.nao.photorecon.ui.util.AssetFileExplorer;
 import com.app.nao.photorecon.ui.util.DateManager;
 
+
 public class MainActivity extends AppCompatActivity implements Runnable {
-    private int mImageIndex = 0;
-    private String[] mTestImages = {"test1.png", "test2.jpg", "test3.png"};
+    // view
     private ImageView mImageView;
+    // Viewに対して直接的すぎる変更で良くないで修正する
+    public void setImageViewBitmap(Bitmap bitmap){
+        mImageView.setImageBitmap(bitmap);
+    }
+    public ImageView getImageView(){
+        return mImageView;
+    }
     private ResultView mResultView;
     private Button mRegisterButton;
     private ProgressBar mProgressBar;
+
+    public void setProgressBarInvisible(int status){
+        mResultView.setVisibility(status);
+    }
     private Bitmap mBitmap = null;
+    public void setBitmap(Bitmap bitmap){this.mBitmap = bitmap;}
+    public Bitmap getBitmap(){return mBitmap;}
+    // state
     private Module mModule = null;
     private SegmentedClass mSegmentedClass;
     private Photo mPhoto;
     // Activities or services
     private ResultToEntities resultToEntities;
     private SnapRectanglePhoto snapRectanglePhoto;
-    private SaveBitmapToDataDirectory saveBitmapToDataDirectory;
     private ArrayList<Bitmap> mPreSegmentedThumbnails;
     private SavePhoto mSavePhoto;
-    //
     private Uri mSelectedImageUri;
+    public void setSelectedImageUri(Uri selectedImageUri){
+        this.mSelectedImageUri = selectedImageUri;
+    }
+    public Uri getSelectedImageUri(){
+        return mSelectedImageUri;
+    }
     private CharSequence mPtlFileName = "yolov5s.torchscript.ptl";
+// TODO:これをActivityに書いてあるのは違和感があるので，直したい．
     private float mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY;
 
+    public void setImageRatio(float imageScaleX, float imageScaleY, float ivScaleX, float ivScaleY, float startX, float startY) {
+        this.mImgScaleX = imageScaleX;
+        this.mImgScaleY = imageScaleY;
+        this.mIvScaleX = ivScaleX;
+        this.mIvScaleY = ivScaleY;
+        this.mStartX = startX;
+        this.mStartY = startY;
+    }
+    // ratio Original by yolo size
+    // 呼び出しごとにメソッド追加
 
+    private Button buttonResisterPhoto;
 
     // TODO:ここ以下２つのメソッドをまとめる
     protected boolean checkManageExtraStoragePermission(){
@@ -112,15 +144,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         setContentView(R.layout.activity_main);
 
-        try {
-            mBitmap = BitmapFactory.decodeStream(getAssets().open(mTestImages[mImageIndex]));
-        } catch (IOException e) {
-            Log.e("Object Detection", "Error reading assets", e);
-            finish();
-        }
-
         mImageView = findViewById(R.id.imageView);
-        mImageView.setImageBitmap(mBitmap);
+        mImageView.setImageResource(R.drawable.noimage_24);
+        //mImageView.setImageBitmap(mBitmap);
         mResultView = findViewById(R.id.resultView);
         mResultView.setVisibility(View.INVISIBLE);
 
@@ -146,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         //TODO: これを依存性注入で記述？
         resultToEntities = new ResultToEntities();
         snapRectanglePhoto = new SnapRectanglePhoto();
-        saveBitmapToDataDirectory = new SaveBitmapToDataDirectory();
+        // saveBitmapToDataDirectory = new SaveBitmapToDataDirectory();
         // referenceDialog
         final Button referenceDialogButton = findViewById(R.id.referenceDialogButton);
         referenceDialogButton.setOnClickListener(new View.OnClickListener() {
@@ -156,29 +182,14 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         });
         //Album Intent
         final Button buttonActiveAlbum = findViewById(R.id.activeAlbumButton);
-        buttonActiveAlbum.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                final Intent intent = new Intent(MainActivity.this, AlbumViewActivity.class);
-                startActivity(intent);
-            }
-        });
+        buttonActiveAlbum.setOnClickListener(new ActiveAlbumButtonHandler(this));
+
         // select Photo Intent
         final Button buttonSelectPhoto = findViewById(R.id.selectPhotoButton);
-        buttonSelectPhoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //写真を選択させる．intent起動
-                if(checkReadMediaImagePermission()) {
-                    Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-                    activityResultLauncher.launch(pickPhoto);
-                    //結果をresultviewに表示
-                }else{
-                }
+        buttonSelectPhoto.setOnClickListener(new SelectPhotoButtonHandler(this,activityResultLauncher));
 
-            }
-        });
 
-        final Button buttonResisterPhoto = findViewById(R.id.registerPhotoButton);
+        buttonResisterPhoto = findViewById(R.id.registerPhotoButton);
         buttonResisterPhoto.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //ローカルファイルに保存する
@@ -252,6 +263,15 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             finish();
         }
     }
+    @Override
+    protected void onRestart(){
+        super.onRestart();
+        //各種初期化
+        mImageView.setImageResource(R.drawable.noimage_24);
+        mResultView.setVisibility(View.INVISIBLE);
+        buttonResisterPhoto.setEnabled(false);
+
+    }
     // Notice: Do not execute this function every frame because it takes time to execute.
     private void updateModel(){
         try {
@@ -270,55 +290,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             finish();
         }
     }
-    private final ActivityResultLauncher<Intent> activityResultLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    activityResult -> {
-                        // requestCode, resultCode, data
-                        if(activityResult.getResultCode() !=RESULT_CANCELED) {
-                            if (activityResult.getResultCode() == Activity.RESULT_OK) {
-                                if (activityResult.getData() != null) {
-                                    //結果を受け取った後の処理
-                                    mSelectedImageUri = activityResult.getData().getData();
-                                    String[] filePathColumn = {MediaStore.Images.Media.DATA};
-                                    if (mSelectedImageUri != null) {
-                                        Cursor cursor = getContentResolver().query(mSelectedImageUri,
-                                                filePathColumn, null, null, null);
-                                        if (cursor != null) {
-                                            //画像の配置
-
-                                            cursor.moveToFirst();
-                                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                                            String picturePath = cursor.getString(columnIndex);
-                                            mBitmap = BitmapFactory.decodeFile(picturePath);
-                                            Matrix matrix = new Matrix();
-                                            matrix.postRotate(0.0f);
-                                            mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), mBitmap.getHeight(), matrix, true);
-                                            mImageView.setImageBitmap(mBitmap);
-                                            cursor.close();
-                                            // 推論開始
-                                            // Mresultviewarraylistが結果を持ってる．
-                                            // mButtonDetect.setEnabled(false);
-                                            mProgressBar.setVisibility(ProgressBar.VISIBLE);
-                                            //mButtonDetect.setText(getString(R.string.run_model));
-                                            mImgScaleX = (float)mBitmap.getWidth() / PrePostProcessor.mInputWidth;
-                                            mImgScaleY = (float)mBitmap.getHeight() / PrePostProcessor.mInputHeight;
-
-                                            mIvScaleX = (mBitmap.getWidth() > mBitmap.getHeight() ? (float)mImageView.getWidth() / mBitmap.getWidth() : (float)mImageView.getHeight() / mBitmap.getHeight());
-                                            mIvScaleY  = (mBitmap.getHeight() > mBitmap.getWidth() ? (float)mImageView.getHeight() / mBitmap.getHeight() : (float)mImageView.getWidth() / mBitmap.getWidth());
-
-                                            mStartX = (mImageView.getWidth() - mIvScaleX * mBitmap.getWidth())/2;
-                                            mStartY = (mImageView.getHeight() -  mIvScaleY * mBitmap.getHeight())/2;
-
-                                            Thread thread = new Thread(MainActivity.this);
-                                            thread.start();
-                                        }
-                                    }
-                                } else {
-
-                                }
-                            }
-                        }
-                    });
+    final private ActivityResultLauncher<Intent> activityResultLauncher =
+            registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new PredictionActivityResultHandler(this));
 
     @Override
     public void run() {

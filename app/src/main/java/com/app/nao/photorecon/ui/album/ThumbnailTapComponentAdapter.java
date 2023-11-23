@@ -37,8 +37,8 @@ public class ThumbnailTapComponentAdapter implements View.OnClickListener{
 //            shapeDrawable.getPaint().setColor(borderColor);
 //            shapeDrawable.getPaint().setStyle(Paint.Style.STROKE);
 //            shapeDrawable.getPaint().setStrokeWidth(borderWidth);
+//            thumbnailListLayout.setBackground(shapeDrawable);
 
-            thumbnailListLayout.setBackground(shapeDrawable);
             // オリジナルイメージ側に四角い枠を表示
             mBoxPaintView.setSegmentedPhoto(mSegmentedPhoto);
             mBoxPaintView.invalidate();

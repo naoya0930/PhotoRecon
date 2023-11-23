@@ -154,7 +154,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mRegisterButton = findViewById(R.id.registerPhotoButton);
         mRegisterButton.setEnabled(false);
 
-        Realm.init(this); // context, usually an Activity or Application
         resultToEntities = new ResultToEntities();
         snapRectanglePhoto = new SnapRectanglePhoto();
 

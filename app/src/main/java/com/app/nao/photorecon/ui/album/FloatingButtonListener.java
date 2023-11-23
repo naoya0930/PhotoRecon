@@ -59,9 +59,9 @@ public class FloatingButtonListener implements View.OnClickListener {
         //TODO:きったないので書き方考える．
         CharSequence[] options = {
                 SpannableStringWithIcon.getSpannableStringWithIcon(context,"日付",
-                        (isSearchActiveByDate ? R.drawable.baseline_filter_alt_64 : R.drawable.baseline_filter_alt_off_64)),
+                        (isSearchActiveByDate ? R.drawable.baseline_filter_alt_white_24 : R.drawable.baseline_filter_alt_off_white_24)),
                 SpannableStringWithIcon.getSpannableStringWithIcon(context,"物体",
-                        (isSearchActiveByCategory ? R.drawable.baseline_filter_alt_64 : R.drawable.baseline_filter_alt_off_64)),
+                        (isSearchActiveByCategory ? R.drawable.baseline_filter_alt_white_24 : R.drawable.baseline_filter_alt_off_white_24)),
                 "検索条件をクリア"};
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override

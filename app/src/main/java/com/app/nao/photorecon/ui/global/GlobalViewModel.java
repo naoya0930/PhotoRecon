@@ -10,7 +10,7 @@ import com.app.nao.photorecon.CustomApplication;
 
 // NOTE:Viewよりも大きいライフサイクルで動くので今のアプリでは，View依存のstateだけで問題ない．
 // NOTE:回転等の外因的な要因に強くなるが，Albumがメモリをたくさん使うので，
-// アプリのライフサイクルを通して可能な限りViewmodelを持たないように今回はする．
+// アプリのライフサイクルを通して可能な限りグローバルなstateを持たないように今回はする．
 public class GlobalViewModel extends ViewModel {
     public GlobalViewModel(
             GlobalState state,

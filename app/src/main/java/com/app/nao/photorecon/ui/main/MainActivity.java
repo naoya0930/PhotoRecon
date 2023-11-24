@@ -1,26 +1,17 @@
 package com.app.nao.photorecon.ui.main;
 
-import androidx.activity.ComponentActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -35,22 +26,17 @@ import org.pytorch.torchvision.TensorImageUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
 
 import com.app.nao.photorecon.R;
 import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.model.entity.SegmentedClass;
 import com.app.nao.photorecon.model.usecase.ResultToEntities;
-import com.app.nao.photorecon.model.usecase.SaveBitmapToDataDirectory;
-import com.app.nao.photorecon.model.usecase.SavePhoto;
 import com.app.nao.photorecon.model.usecase.SnapRectanglePhoto;
 import com.app.nao.photorecon.ui.album.AlbumViewActivity;
+import com.app.nao.photorecon.ui.license.LicenseViewActivity;
 import com.app.nao.photorecon.ui.util.AssetFileExplorer;
 import com.app.nao.photorecon.ui.util.DateManager;
 
@@ -66,11 +52,17 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         return mImageView;
     }
     private ResultView mResultView;
+    public void setResultViewState(int state){
+        mResultView.setVisibility(state);
+    }
     private Button mRegisterButton;
+    public void setResisterButtonState(boolean b){
+        mRegisterButton.setEnabled(b);
+    }
     private ProgressBar mProgressBar;
 
     public void setProgressBarInvisible(int status){
-        mResultView.setVisibility(status);
+        mProgressBar.setVisibility(status);
     }
     private Bitmap mBitmap = null;
     public void setBitmap(Bitmap bitmap){this.mBitmap = bitmap;}
@@ -79,11 +71,17 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private Module mModule = null;
     private SegmentedClass mSegmentedClass;
     private Photo mPhoto;
+    public Photo getPhoto(){
+        return mPhoto;
+    }
     // Activities or services
     private ResultToEntities resultToEntities;
     private SnapRectanglePhoto snapRectanglePhoto;
     private ArrayList<Bitmap> mPreSegmentedThumbnails;
-    private SavePhoto mSavePhoto;
+    public ArrayList<Bitmap> getPreSegmentedThumbnails(){
+        return mPreSegmentedThumbnails;
+    }
+    // private SavePhoto mSavePhoto;
     private Uri mSelectedImageUri;
     public void setSelectedImageUri(Uri selectedImageUri){
         this.mSelectedImageUri = selectedImageUri;
@@ -92,6 +90,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         return mSelectedImageUri;
     }
     private CharSequence mPtlFileName = "yolov5s.torchscript.ptl";
+    public void setPtlFileName(CharSequence str){
+        mPtlFileName = str;
+    }
+    public CharSequence getPtlFileName(){return mPtlFileName;}
 // TODO:これをActivityに書いてあるのは違和感があるので，直したい．
     private float mImgScaleX, mImgScaleY, mIvScaleX, mIvScaleY, mStartX, mStartY;
 
@@ -103,32 +105,14 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         this.mStartX = startX;
         this.mStartY = startY;
     }
-    // ratio Original by yolo size
-    // 呼び出しごとにメソッド追加
 
     private Button buttonResisterPhoto;
+    private Button buttonSelectPhoto;
+    private Button buttonActiveAlbum;
+    private Button referenceDialogButton;
+    private Button buttonBackup;
+    private Button buttonSelectModel;
 
-    // TODO:ここ以下２つのメソッドをまとめる
-    protected boolean checkManageExtraStoragePermission(){
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.MANAGE_EXTERNAL_STORAGE) !=
-                PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE},1);
-        }else{
-            return true;
-        }
-        return false;
-    }
-    protected boolean checkReadMediaImagePermission(){
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.READ_MEDIA_IMAGES) !=
-                PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_MEDIA_IMAGES},1);
-        }else{
-            return true;
-        }
-        return false;
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -158,92 +142,35 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         snapRectanglePhoto = new SnapRectanglePhoto();
 
         // referenceDialog
-        final Button referenceDialogButton = findViewById(R.id.referenceDialogButton);
+        referenceDialogButton = findViewById(R.id.referenceDialogButton);
         referenceDialogButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
                 final Intent intent = new Intent(v.getContext(), LicenseViewActivity.class);
                 startActivity(intent);
             }
         });
         //Album Intent
-        final Button buttonActiveAlbum = findViewById(R.id.activeAlbumButton);
+        buttonActiveAlbum = findViewById(R.id.activeAlbumButton);
         buttonActiveAlbum.setOnClickListener(new ActiveAlbumButtonHandler(this));
 
         // select Photo Intent
-        final Button buttonSelectPhoto = findViewById(R.id.selectPhotoButton);
+        buttonSelectPhoto = findViewById(R.id.selectPhotoButton);
         buttonSelectPhoto.setOnClickListener(new SelectPhotoButtonHandler(this,activityResultLauncher));
 
-
+        // Resister Button
         buttonResisterPhoto = findViewById(R.id.registerPhotoButton);
-        buttonResisterPhoto.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                //ローカルファイルに保存する
-                //日付をセットする．
-                mPhoto.setSaved_at(DateManager.getLocalDate());
-                // resultの情報をもとにrealmに情報を登録する．
-                mSavePhoto = new SavePhoto(mPhoto);
-                mSavePhoto.saveSegmentBitmapToDirectory(v.getContext(),mPreSegmentedThumbnails);
-                mSavePhoto.saveOriginalBitmapToDirectory(v.getContext(),mBitmap);
-                mSavePhoto.registerToRealm();
-                mRegisterButton.setEnabled(false);
+        buttonResisterPhoto.setOnClickListener(new ResisterPhotoButtonHandler(this));
 
-                // TODO: 成功，失敗の結果をイベント通知
-                mSelectedImageUri = null;
-            }
-        });
-        final Button buttonBackup = findViewById(R.id.backupButton);
+        buttonBackup = findViewById(R.id.backupButton);
         buttonBackup.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
             }
         });
+        buttonSelectModel = findViewById(R.id.selectModelButton);
+        buttonSelectModel.setOnClickListener(new SelectModelButtonHandler(this));
 
-        final Button buttonSelectModel = findViewById(R.id.selectModelButton);
-        buttonSelectModel.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mResultView.setVisibility(View.INVISIBLE);
-                AssetManager assetManager = getResources().getAssets();
-                String[] assetList =null;
-                try {
-                    assetList = assetManager.list("");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                List<CharSequence> modelFileList =new ArrayList<>();
-                for (String modelName : assetList)
-                    if (modelName.endsWith(".ptl"))
-                        modelFileList.add(modelName);
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Select Model");
-                CharSequence[] options = modelFileList.toArray(new CharSequence[modelFileList.size()]);
-                builder.setSingleChoiceItems(options, 0, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        mPtlFileName = options[whichButton];
-                        updateModel();
-                    }
-                });
-                builder.show();
-            }
-        });
-        //初期化
-        try {
-            mModule = LiteModuleLoader.load(AssetFileExplorer.assetFilePath(getApplicationContext(), mPtlFileName.toString()));
-            BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));
-            String line;
-            List<String> classes = new ArrayList<>();
-            while ((line = br.readLine()) != null) {
-                classes.add(line);
-            }
-            PrePostProcessor.mClasses = new String[classes.size()];
-            classes.toArray(PrePostProcessor.mClasses);
-            mSegmentedClass = new SegmentedClass(mPtlFileName.toString(),classes);
-        } catch (IOException e) {
-            Log.e("Object Detection", "Error reading assets", e);
-            finish();
-        }
+        //Moduleの初期化
+        this.loadModel();
     }
     @Override
     protected void onRestart(){
@@ -255,9 +182,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     }
     // Notice: Do not execute this function every frame because it takes time to execute.
-    private void updateModel(){
+    // TODO: これの処理を決める．Viewmodelでもないような..?usecaseっぽい
+    public void loadModel(){
         try {
             mModule = LiteModuleLoader.load(AssetFileExplorer.assetFilePath(getApplicationContext(), mPtlFileName.toString()));
+            //TODO:  assetFileとやり取りしているので，切り出してusecaseに置く
             BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));
             String line;
             List<String> classes = new ArrayList<>();
@@ -272,6 +201,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             finish();
         }
     }
+    // TODO:これをActivityに置いていていいのか検討．ライフサイクルの一環だし問題ないか？
     final private ActivityResultLauncher<Intent> activityResultLauncher =
             registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -305,6 +235,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                         mIvScaleX,mIvScaleY,
                         mStartX,mStartY,
                         mBitmap, results));
+        // mPhoto.setSaved_at(DateManager.getLocalDate());
         List<Result> savedResult = new ArrayList<Result>(
                 snapRectanglePhoto.makeSegmentedRectangle(
                         mIvScaleX,mIvScaleY,

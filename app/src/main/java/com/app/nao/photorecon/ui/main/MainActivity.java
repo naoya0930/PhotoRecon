@@ -162,6 +162,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         referenceDialogButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
+                final Intent intent = new Intent(v.getContext(), LicenseViewActivity.class);
+                startActivity(intent);
             }
         });
         //Album Intent

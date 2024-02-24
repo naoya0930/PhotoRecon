@@ -1,5 +1,7 @@
 package com.app.nao.photorecon.ui.main;
 
+import static com.app.nao.photorecon.model.net.AWSClientByUserpool.test_thread;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,6 +9,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -27,22 +30,23 @@ import org.pytorch.torchvision.TensorImageUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.app.nao.photorecon.R;
 import com.app.nao.photorecon.model.entity.Photo;
 import com.app.nao.photorecon.model.entity.SegmentedClass;
+import com.app.nao.photorecon.model.net.AWSClient;
+import com.app.nao.photorecon.model.net.AWSClientByUserpool;
 import com.app.nao.photorecon.model.usecase.ResultToEntities;
 import com.app.nao.photorecon.model.usecase.SnapRectanglePhoto;
-import com.app.nao.photorecon.ui.album.AlbumViewActivity;
+import com.app.nao.photorecon.ui.backup.BackupViewActivity;
 import com.app.nao.photorecon.ui.license.LicenseViewActivity;
 import com.app.nao.photorecon.ui.util.AssetFileExplorer;
-import com.app.nao.photorecon.ui.util.DateManager;
 
 
 public class MainActivity extends AppCompatActivity implements Runnable {
-    // view
     private ImageView mImageView;
     // Viewに対して直接的すぎる変更で良くないで修正する
     public void setImageViewBitmap(Bitmap bitmap){
@@ -125,6 +129,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
         // android 33より新しい場合はメソッド側で毎回確かめるようにする．
         // OnCreateで権限チェックはできなくなっている．
+        // AWS test
+        //test_thread(this);
 
         setContentView(R.layout.activity_main);
 
@@ -164,6 +170,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonBackup = findViewById(R.id.backupButton);
         buttonBackup.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                final Intent intent = new Intent(v.getContext(), BackupViewActivity.class);
+                startActivity(intent);
             }
         });
         buttonSelectModel = findViewById(R.id.selectModelButton);

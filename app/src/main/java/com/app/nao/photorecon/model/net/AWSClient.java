@@ -3,14 +3,22 @@ package com.app.nao.photorecon.model.net;
 import android.content.Context;
 import android.util.Log;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.http.HttpMethodName;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.results.Tokens;
 import com.amazonaws.mobile.config.AWSConfiguration;
 import com.amazonaws.mobileconnectors.apigateway.ApiClientFactory;
 
+import com.amazonaws.mobileconnectors.apigateway.ApiRequest;
+import com.amazonaws.mobileconnectors.apigateway.ApiResponse;
 import com.app.nao.photorecon.model.repository.AppSecretForDev;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import ApiGatewayManager.PhotoreconprodClient;
 import ApiGatewayManager.model.LambdaResponceBackupList;
@@ -18,8 +26,9 @@ import ApiGatewayManager.model.LambdaResponceBackupList;
 
 // NOTE:各種トークンは，sharedPreferenceに持っていくのでこれはソースコード側で管理しない．
 // NOTE:lambdaの戻り値はSDKの範囲外なので，こちらはきっちり管理していく．ModelはSDKに含まれているのでusecaseでモニタリングする．
-// このクラスでやることはスレッド管理を正常にすること．interfaceを書くこと
+// このクラスでやることはスレッド管理を正常にすること．後段のCallbackに関しては，interfaceを書くこと
 public class AWSClient {
+
     public void test_thread(Context context) {
         new Thread(new Runnable() {
             @Override
@@ -45,20 +54,6 @@ public class AWSClient {
 
         int resourceId = app.getResources().getIdentifier("awsconfiguration", "raw", app.getPackageName());
         awsMobileClient.initialize(app, new AWSConfiguration(app, resourceId),callbackFunc.awsInitiationCallback());
-//            new Callback<UserStateDetails>() {
-//            @Override
-//            public void onResult(UserStateDetails details) {
-//                Log.d("app", "AWS ClientInitiation Success"+ details.getUserState().toString());
-//                // ここケースわけが必要？SIGND_INという状態がよーわからん
-//
-//                tryLogin();
-//            }
-//
-//            @Override
-//            public void onError(Exception e) {
-//                Log.d("AWS ClientInitiation", e.toString());
-//            }
-//        });
     }
     public void tryLogin(String inputUserName,String inputPassword){
         _tryLogin(inputUserName,inputPassword);
@@ -71,32 +66,7 @@ public class AWSClient {
             password = AppSecretForDev.CognitoPassTest;
         }
         // TODO ログイン情報を読み込む．
-        awsMobileClient.signIn(username, password, null, callbackFunc.tryLoginCallback()
-//
-//                new Callback<SignInResult>() {
-//            @Override
-//            public void onResult(final SignInResult signInResult) {
-//                Log.d("TAG", "Sign-in callback state: " + signInResult.getSignInState());
-//                        switch (signInResult.getSignInState()) {
-//                            case DONE:
-//
-//                                hookApiGateway();
-//                                break;
-//                            case NEW_PASSWORD_REQUIRED:
-//                                // パスワードの再設定画面に案内
-//                                Log.e("app", "このアカウントは現在サーバ側で使用できないようになっています");
-//                                break;
-//                            default:
-//                                Log.e("app", "このアプリケーションは現在サーバ側で使用できないようになっています");
-//                                break;
-//                        }
-//            }
-//            @Override
-//            public void onError(Exception e) {
-//                Log.e("token", "  ");
-//            }
-//        }
-    );
+        awsMobileClient.signIn(username, password, null, callbackFunc.tryLoginCallback());
     }
     public void hookApiGateway() {
         // TODO: 安全性的にイマイチなので，自分がサブスレッドかチェックする．
@@ -128,30 +98,38 @@ public class AWSClient {
             Log.e("app",e.toString());
             return null;
         }
-        ApiClientFactory factory = new ApiClientFactory().credentialsProvider(new AWSCredentialsProvider() {
-            @Override
-            public AWSCredentials getCredentials() {
-                return new AWSCredentials() {
-                    @Override
-                    public String getAWSAccessKeyId() {
-                        return tokens.getIdToken().toString();
-                    }
+        //
+        final PhotoreconprodClient client = new ApiClientFactory().build(PhotoreconprodClient.class);
+        ApiRequest localRequest =
+                new ApiRequest(client.getClass().getSimpleName())
+                        .withPath("/user/backup/list")
+                        .withHttpMethod(HttpMethodName.valueOf("GET"))
+                        // .withHeaders(headers)
+                        // .addHeader("Content-Type", "application/json")
+                        .addHeader("Authorization", "Bearer "+tokens.getIdToken().getTokenString());  //Use JWT token
+                        // .withParameters(parameters);
+        // デフォルトではpostで投げるようになっている．
+        ApiResponse response= client.execute(localRequest);
+        LambdaResponceBackupList lmResList;
+        try {
+            String jsonString = convertInputStreamToString(response.getContent());
+            Gson gson = new GsonBuilder().create();
+            lmResList = gson.fromJson(jsonString, LambdaResponceBackupList.class);
 
-                    @Override
-                    public String getAWSSecretKey() {
-                        return "";
-                    }
-                };
-            }
-
-            @Override
-            public void refresh() {
-            }
-        });
-        final PhotoreconprodClient client = factory.build(PhotoreconprodClient.class);
-        // NOTE:ここ認証できていないとエラーで落ちる．
-        //com.amazonaws.mobileconnectors.apigateway.ApiClientException: Cognito Identity not configured
-        final LambdaResponceBackupList lambdaBodyResponce = client.userBackupListGet();
-        return  lambdaBodyResponce;
+            Log.i("","");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return lmResList;
     }
-}
+
+    private String convertInputStreamToString(InputStream inputStream) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line);
+        }
+        return stringBuilder.toString();
+    }
+}:

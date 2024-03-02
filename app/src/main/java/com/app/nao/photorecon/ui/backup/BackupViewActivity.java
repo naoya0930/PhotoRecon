@@ -2,30 +2,40 @@ package com.app.nao.photorecon.ui.backup;
 
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.app.nao.photorecon.R;
-import com.app.nao.photorecon.model.net.AWSClient;
 
+import org.w3c.dom.Text;
+
+
+
+// TODO: 非常に不安定なので，なにかしら見てあげること
 public class BackupViewActivity extends AppCompatActivity{
     // 初回ログイン，もしくはセッション切れのときにこの画面に飛ぶ．
     private Button loginButton;
     private Button signUpButton;
-    private EditText emailText;
+    private EditText emailEditText;
+    private EditText passEditText;
+
+    // display progress
+    private FrameLayout progressLayout;
     private ProgressBar progressBar;
+    private TextView processText;
+
+    // from viewmdel
     private CharSequence[] ArrayBackupNames;
-    private EditText passText;
 
     // TODO: ここで宣言したらダメなんだっけ？結局Activityのライフサイクルに依存するようになる？
 
@@ -33,8 +43,11 @@ public class BackupViewActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_backup_login);
-
+        emailEditText = findViewById(R.id.emailEditText);
+        passEditText = findViewById(R.id.passwordEditText);
+        progressLayout = findViewById(R.id.progressDisplayFrameLayout);
         progressBar = findViewById(R.id.progressBar);
+        processText = findViewById(R.id.progressTextView);
 
         // Create a ViewModel the first time the system calls an activity's onCreate() method.
         // Re-created activities receive the same MyViewModel instance created by the first activity.
@@ -43,7 +56,7 @@ public class BackupViewActivity extends AppCompatActivity{
             // TODO: UI側の更新はこちらに記載する．
             // 値が変わったときに呼び出される
             // TODO: if文で分岐していくこと．
-            activeLoadingProgressbar(false);
+            inActiveLoadingProgressLayout();
             switch (state.getProcessState()){
 
                 case PROCESSED:
@@ -55,7 +68,8 @@ public class BackupViewActivity extends AppCompatActivity{
                     break;
                 case HAVE_ACTIVE_TOKEN:
                     Log.i("app","AWS lambdaをフックする準備ができました．");
-                    // model.getAWSBackupList();
+                    model.getAWSBackupList();
+                    activeLoadingProgressLayout("Getting List...");
                     break;
                 case LOGOUT_WITH_TOKEN:
                     break;
@@ -64,13 +78,8 @@ public class BackupViewActivity extends AppCompatActivity{
                 case LOGOUT_WITH_NO_TOKEN:
                     // model.activityInitiation(this);
                     break;
-
-
             }
         });
-
-        emailText = findViewById(R.id.emailEditText);
-        passText = findViewById(R.id.passwordEditText);
 
         loginButton = findViewById(R.id.loginButton);
         loginButton.setOnClickListener(new View.OnClickListener() {
@@ -81,7 +90,7 @@ public class BackupViewActivity extends AppCompatActivity{
                 //activeLoadingProgressbar(true);
                 // AWSClient.saveEncryptedToken(v.getContext());
                 model.pushSignInButton("","");
-                activeLoadingProgressbar(true);
+                activeLoadingProgressLayout("try Login ...");
 
             }
         });
@@ -89,21 +98,25 @@ public class BackupViewActivity extends AppCompatActivity{
         signUpButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                model.getAWSBackupList();
+
             }
         });
         // アクティビティのイニシエーションをする．
         //AWS側にチェックを実施
         // これはライフサイクルで頻繁に起きないようにしたほうがいいかもしれん
         // ログイン情報をチェックしています．
-        activeLoadingProgressbar(true);
+        activeLoadingProgressLayout("Ready to Access...");
         model.activityInitiation(this);
 
     }
-
-    public void activeLoadingProgressbar(boolean b){
-            progressBar.setActivated(b);
+    public void inActiveLoadingProgressLayout(){
+        progressLayout.setVisibility(View.GONE);
     }
+    public void activeLoadingProgressLayout(String message){
+        progressLayout.setVisibility(View.VISIBLE);
+        processText.setText(message);
+    }
+
     public void showBackupListNameDialog(CharSequence[] arrayBackupName){
     AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("選択してください").setItems(arrayBackupName, new DialogInterface.OnClickListener() {

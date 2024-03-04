@@ -3,6 +3,7 @@ package com.app.nao.photorecon.ui.backup;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.app.nao.photorecon.R;
+import com.app.nao.photorecon.ui.album.AlbumViewActivity;
 
 import org.w3c.dom.Text;
 
@@ -98,7 +100,8 @@ public class BackupViewActivity extends AppCompatActivity{
         signUpButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-
+                final Intent intent = new Intent(v.getContext(), SignupViewActivity.class);
+                v.getContext().startActivity(intent);
             }
         });
         // アクティビティのイニシエーションをする．
@@ -129,3 +132,6 @@ public class BackupViewActivity extends AppCompatActivity{
     }
 
 }
+// TODO: バックアップのアップロード
+// TODO: バックアップのダウンロード
+// TODO: サインアップ・メール認証

@@ -19,6 +19,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import ApiGatewayManager.PhotoreconprodClient;
 import ApiGatewayManager.model.LambdaResponceBackupList;
@@ -28,7 +30,14 @@ import ApiGatewayManager.model.LambdaResponceBackupList;
 // NOTE:lambdaの戻り値はSDKの範囲外なので，こちらはきっちり管理していく．ModelはSDKに含まれているのでusecaseでモニタリングする．
 // このクラスでやることはスレッド管理を正常にすること．後段のCallbackに関しては，interfaceを書くこと
 public class AWSClient {
-
+    // AWSClientから出さない
+    private String userName = "";
+    private String getUserName(){
+        return userName;
+    }
+    private void setUserName(String str){
+        this.userName = str;
+    }
     public void test_thread(Context context) {
         new Thread(new Runnable() {
             @Override
@@ -65,6 +74,7 @@ public class AWSClient {
             username = AppSecretForDev.CognitoUserIdTest;
             password = AppSecretForDev.CognitoPassTest;
         }
+        setUserName(username);
         // TODO ログイン情報を読み込む．
         awsMobileClient.signIn(username, password, null, callbackFunc.tryLoginCallback());
     }
@@ -99,15 +109,18 @@ public class AWSClient {
             return null;
         }
         //
+        Map<String,String> parameters = new HashMap<>();
+        parameters.put("username",getUserName());
+
         final PhotoreconprodClient client = new ApiClientFactory().build(PhotoreconprodClient.class);
         ApiRequest localRequest =
-                new ApiRequest(client.getClass().getSimpleName())
-                        .withPath("/user/backup/list")
-                        .withHttpMethod(HttpMethodName.valueOf("GET"))
-                        // .withHeaders(headers)
-                        // .addHeader("Content-Type", "application/json")
-                        .addHeader("Authorization", "Bearer "+tokens.getIdToken().getTokenString());  //Use JWT token
-                        // .withParameters(parameters);
+            new ApiRequest(client.getClass().getSimpleName())
+                    .withPath("/user/backup/list")
+                    .withHttpMethod(HttpMethodName.valueOf("GET"))
+                    // .withHeaders(headers)
+                    // .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", "Bearer "+tokens.getIdToken().getTokenString());  //Use JWT token
+                    // .withParameters(parameters);
         // デフォルトではpostで投げるようになっている．
         ApiResponse response= client.execute(localRequest);
         LambdaResponceBackupList lmResList;

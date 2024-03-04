@@ -58,7 +58,15 @@ realmDBとGlideを使用した速い読み出しを実装しています．ま�
 https://github.com/pytorch/android-demo-app/tree/master/ObjectDetection
 
 ## 執筆記事
+
+### pytorch_moblileについて
+
 - https://qiita.com/sanjolin_chun/items/f667adf5ad75ed47c9bd
 - https://qiita.com/sanjolin_chun/items/090ff55c748f003a54a7
 - https://qiita.com/sanjolin_chun/items/7c2289fa849a9b5d7337
 
+### AWS cognitoやAPIgatewayについて
+
+- https://qiita.com/sanjolin_chun/items/832fb1c6edfb3ea10ed5
+- https://qiita.com/sanjolin_chun/items/1b37107d576a38841537
+- https://qiita.com/sanjolin_chun/items/b47b1ccf536b3c4324f0

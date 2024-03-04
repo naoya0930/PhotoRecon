@@ -7,8 +7,9 @@
     <string name="select">Select</string>
     <string name="live">Live</string>
     <string name="model">Model</string>
-
+    <!--  Top page-->
     <string name="activeCamera">写真を撮る</string>
+    <string name= "reference">ライセンス</string>
     <string name="activeAlbum">アルバムを見る</string>
     <string name="registerPhoto">写真を登録する</string>
     <string name="backup">バックアップ</string>

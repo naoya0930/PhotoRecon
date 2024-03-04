@@ -25,6 +25,8 @@ public class Photo extends RealmObject {
     private String recon_list_uri;
     // model name forwarded by
     private String model_name;
+    // image save date
+    private String saved_at;
 
     public Photo() {}
 
@@ -70,6 +72,9 @@ public class Photo extends RealmObject {
     public void setRecon_list_uri(String recon_list_uri) {
         this.recon_list_uri = recon_list_uri;
     }
+    public String getSaved_at(){return this.saved_at;}
+    public void setSaved_at(String saved_at){this.saved_at = saved_at;}
+
 }
 
 

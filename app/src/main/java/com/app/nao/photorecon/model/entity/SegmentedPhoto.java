@@ -2,11 +2,7 @@ package com.app.nao.photorecon.model.entity;
 
 import android.graphics.Rect;
 
-import java.net.URI;
-
-import io.realm.RealmList;
 import io.realm.RealmObject;
-import io.realm.annotations.Required;
 
 public class SegmentedPhoto extends RealmObject {
     
@@ -19,8 +15,9 @@ public class SegmentedPhoto extends RealmObject {
     // private Rect rect;
     private int left;
     private int top;
-    private int width;
-    private int height;
+    private int right;
+    private int bottom;
+
 
 
     private float score;
@@ -42,12 +39,12 @@ public class SegmentedPhoto extends RealmObject {
     public void setRect(Rect rect){
         this.left = rect.left;
         this.top = rect.top;
-        this.width = rect.width();
-        this.height = rect.height();
+        this.right = rect.right;
+        this.bottom = rect.bottom;
 
     }
     public Rect getRect(){
-        return new Rect(this.left,this.top,this.width,this.height);
+        return new Rect(this.left,this.top,this.right,this.bottom);
     }
 
     public float getScore() {

@@ -38,3 +38,7 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# application config
+awsconfiguration.json
+

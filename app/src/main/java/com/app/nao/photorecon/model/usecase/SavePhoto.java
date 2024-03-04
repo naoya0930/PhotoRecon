@@ -6,12 +6,12 @@ import android.util.Log;
 
 import com.app.nao.photorecon.model.dao.RealmDAO;
 import com.app.nao.photorecon.model.entity.Photo;
-import com.app.nao.photorecon.model.repository.LocalFileUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+
 
 public class SavePhoto extends RealmDAO<Photo> {
     private Photo mPhoto;
@@ -36,15 +36,15 @@ public class SavePhoto extends RealmDAO<Photo> {
         }
         for(int i=0;i<bitmaps.size();i++) {
             Bitmap bitmap =bitmaps.get(i);
+            Bitmap cropBitmap = resizeBitmap(cropToSquare(bitmap),200);
             // ファイルの保存パスを生成
             String fileName =Integer.toString(i)+".JPEG";
             File file = new File(directory, fileName);
 
             // セグメントした画像をBitmapをファイルに保存
             try {
-
                 FileOutputStream fos = new FileOutputStream(file);
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                cropBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
                 fos.flush();
                 fos.close();
                 Log.i("TEST","Data is saved:"+directory+"/"+fileName);
@@ -53,7 +53,27 @@ public class SavePhoto extends RealmDAO<Photo> {
             }
         }
     }
-    public void saveOriginalBitmapToDirctory(Context context, Bitmap bitmap){
+    Bitmap cropToSquare(Bitmap bitmap) {
+        if (bitmap == null) {
+            return null;
+        }
+
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        int size = Math.min(width, height); // 短い辺のサイズを取得
+
+        int x = (width - size) / 2;
+        int y = (height - size) / 2;
+
+        return Bitmap.createBitmap(bitmap, x, y, size, size);
+    }
+    Bitmap resizeBitmap(Bitmap bitmap, int squireSize){
+        return Bitmap.createScaledBitmap(bitmap,squireSize,squireSize,true);
+
+    }
+
+    public void saveOriginalBitmapToDirectory(Context context, Bitmap bitmap){
         String objectId = mPhoto.getId().toString();
         String mOriginalFileDirectory = mPhoto.getSourceOriginalUri();
         // String mOriginalFileDirectory = LocalFileUtil.LOCAL_FILE_DIRECTORY +  objectId + "/original/";

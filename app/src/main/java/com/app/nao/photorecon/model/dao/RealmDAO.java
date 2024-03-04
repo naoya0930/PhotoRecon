@@ -3,6 +3,10 @@ package com.app.nao.photorecon.model.dao;
 
 import android.util.Log;
 
+import org.bson.types.ObjectId;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +15,7 @@ import io.realm.RealmConfiguration;
 import io.realm.RealmObject;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
+import io.realm.annotations.PrimaryKey;
 
 // データベース（主にSQLite）にクエリを投げてレコードを取得し、エンティティに変換するクラス。
 // もちろんその逆（データベースへのWrite）も行います。
@@ -65,18 +70,49 @@ public abstract class RealmDAO<T extends RealmObject>{
         });
        realm_instance.close();
     }
-    protected void delete_entity(RealmConfiguration conf,RealmQuery q){
+    protected T deleteEntityByStringPrimaryKey(RealmConfiguration conf,ObjectId key,Class<T> type){
         Realm.setDefaultConfiguration(conf);
         Realm realm_instance = Realm.getDefaultInstance();
+        List<T> rl= new ArrayList<T>();
+        T t = findByPrimaryStringKey(conf,key,type);
         realm_instance.executeTransaction(r->{
-            RealmResults<T> list = q.findAll();
-            for(T t:list){
-                // 遅い気がする．もう少しいい実装がありそう
-                t.deleteFromRealm();
-            }
+            rl.add(t);
+            t.deleteFromRealm();
         });
         realm_instance.close();
+        return rl.get(0);
     }
+    //ObjectId型はobjectで受けられない
+    protected T findByPrimaryStringKey(RealmConfiguration conf,ObjectId key,Class<T> type) {
+        Realm.setDefaultConfiguration(conf);
+        Realm realm_instance = Realm.getDefaultInstance();
+        List<T> res = new ArrayList<>();
+        Field primaryKeyField = getPrimaryKeyField(type);
+        Type primaryKeyType = primaryKeyField.getType();
 
+        realm_instance.executeTransaction(r->{
+            // TODO:ここキャストしてたらプライマリキーを動的に見つけた意味がないのでなんとか考えてみる．
+            T t =r.where(type).equalTo(primaryKeyField.getName(),(ObjectId) key ).findFirst();
+            res.add(t);
+        });
+        realm_instance.close();
+        return res.get(0);
+    }
+    private Field getPrimaryKeyField(Class<T> type) {
+        Field primaryKeyField = null;
+        // Tクラスのフィールドを取得
+        Field[] fields = type.getDeclaredFields();
+        // 主キーを探す
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(PrimaryKey.class)) {
+                primaryKeyField = field;
+                break;
+            }
+        }
+        if (primaryKeyField == null) {
+            throw new IllegalArgumentException("Primary key field not found in class " + type.getName());
+        }
+        return primaryKeyField;
+    }
 
 }

@@ -17,10 +17,11 @@ public class BackupState {
         LOGOUT_WITH_NO_TOKEN,
         LOGOUT_WITH_TOKEN,
         LOGGING_IN,
-        HAVE_ACTIVE_TOKEN,
+        GETTING_BACKUP_LIST,
         LAMBDA_CHALLENGING,
         PROCESSED,
         BACKUP_UPLOADING,
+
         BACKUP_DOWNLOADING,
         PROCESS_SUCCESSED
     }

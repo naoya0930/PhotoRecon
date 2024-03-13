@@ -72,7 +72,7 @@ public class BackupViewActivity extends AppCompatActivity{
                 case LOGGING_IN:
                     Log.i("app","AWS configrationの設定とpreferenceの確認ができました．");
                     break;
-                case HAVE_ACTIVE_TOKEN:
+                case GETTING_BACKUP_LIST:
                     Log.i("app","AWS lambdaをフックする準備ができました．");
                     model.getAWSBackupList();
                     activeLoadingProgressLayout("Getting List...");

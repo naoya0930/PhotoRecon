@@ -100,7 +100,7 @@ public class BackupViewModel extends ViewModel implements AWSClientInterfaceCall
             public void onResult(SignInResult result) {
                 if (result.getSignInState().equals(SignInState.DONE)) {
                     BackupState bs = backupStateLv.getValue();
-                    bs.setProcessState(BackupState.ProcessState.BACKUP_DOWNLOADING);
+                    bs.setProcessState(BackupState.ProcessState.GETTING_BACKUP_LIST);
                     backupStateLv.postValue(bs);
 
                 } else {

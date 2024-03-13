@@ -18,6 +18,8 @@ import com.amazonaws.mobile.client.UserState;
 import com.amazonaws.mobile.client.UserStateDetails;
 import com.amazonaws.mobile.client.results.SignInResult;
 import com.amazonaws.mobile.client.results.SignInState;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.app.nao.photorecon.CustomApplication;
 import com.app.nao.photorecon.model.net.AWSClient;
 import com.app.nao.photorecon.model.net.AWSClientInterfaceCallbacks;
@@ -30,7 +32,7 @@ import ApiGatewayManager.model.LambdaResponceBackupListItem;
 // AWS Cognitoの認証が入ってくるとcallbackが多発するので，流石に非同期処理を管理しきれなくなった．
 // そこで，認証関連のstateの管理として部分的に使用することにする．
 // usecaseへはのすべてここから呼ぶこと
-public class BackupViewModel extends ViewModel implements AWSClientInterfaceCallbacks {
+public class BackupViewModel extends ViewModel implements AWSClientInterfaceCallbacks{
 
     // TODO: アクティビティが死んでも変数の状態は維持したいので，もう少し上位レイヤーに書く
 
@@ -42,6 +44,7 @@ public class BackupViewModel extends ViewModel implements AWSClientInterfaceCall
     }
 
     // これはLiveデータではない
+    // interfaceの引き渡し
     private AWSClient awsClient = new AWSClient(this);
     //
     //context渡したくないがやむなし
@@ -50,7 +53,6 @@ public class BackupViewModel extends ViewModel implements AWSClientInterfaceCall
         awsClient.initiateAwsTokens(context);
         // backupState.setValue();
     }
-
     //ちょっとここに書くか微妙だが，プロセス管理上にいるのでここで扱う．
     public void pushSignInButton(String username,String password) {
         awsClient.tryLogin("", "");
@@ -58,9 +60,14 @@ public class BackupViewModel extends ViewModel implements AWSClientInterfaceCall
     public void getAWSBackupList(){
         awsClient.hookApiGateway();
     }
+    public void exeS3BackupUpload(){
+
+    }
+    public void exeS3BackupDownload(){
+
+    }
     @Override
     public Callback<UserStateDetails> awsInitiationCallback() {
-
         return new Callback<UserStateDetails>() {
             @Override
             public void onResult(UserStateDetails result) {
@@ -68,12 +75,11 @@ public class BackupViewModel extends ViewModel implements AWSClientInterfaceCall
                     //自動でフックしてくれるのでここでは相手にしない，ただし，トークンが生きている場合は，アクセス可能なので，一度投げておく．
                     // backupstatusがnullで戻って来る．初期化されていない？
                     BackupState bs = backupStateLv.getValue();
-                    bs.setProcessState(BackupState.ProcessState.LOGGING_IN);
+                    bs.setProcessState(BackupState.ProcessState.BACKUP_UPLOADING);
                     backupStateLv.postValue(bs);
                     //TODO: トークンがnullの場合にログイン画面に案内
                     // これをやると自動でログインできるようになる．
                     // awsClient.hookApiGateway();
-
                 } else {
                     // ログインでコケてる．
                 }
@@ -94,8 +100,9 @@ public class BackupViewModel extends ViewModel implements AWSClientInterfaceCall
             public void onResult(SignInResult result) {
                 if (result.getSignInState().equals(SignInState.DONE)) {
                     BackupState bs = backupStateLv.getValue();
-                    bs.setProcessState(BackupState.ProcessState.HAVE_ACTIVE_TOKEN);
+                    bs.setProcessState(BackupState.ProcessState.BACKUP_DOWNLOADING);
                     backupStateLv.postValue(bs);
+
                 } else {
                     // サインインでコケてる．
                 }
@@ -118,7 +125,6 @@ public class BackupViewModel extends ViewModel implements AWSClientInterfaceCall
         bs.setProcessState(BackupState.ProcessState.PROCESSED);
         backupStateLv.postValue(bs);
     }
-
 }
 
 

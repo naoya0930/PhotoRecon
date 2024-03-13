@@ -1,6 +1,7 @@
 package com.app.nao.photorecon.ui.backup;
 
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,6 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.app.nao.photorecon.R;
+import com.app.nao.photorecon.model.usecase.DeletePhotoFromLocalFile;
+import com.app.nao.photorecon.model.usecase.DeletePhotoFromRealm;
 import com.app.nao.photorecon.ui.album.AlbumViewActivity;
 
 import org.w3c.dom.Text;
@@ -37,6 +40,7 @@ public class BackupViewActivity extends AppCompatActivity{
     private TextView processText;
 
     // from viewmdel
+    private BackupViewModel model;
     private CharSequence[] ArrayBackupNames;
 
     // TODO: ここで宣言したらダメなんだっけ？結局Activityのライフサイクルに依存するようになる？
@@ -53,7 +57,7 @@ public class BackupViewActivity extends AppCompatActivity{
 
         // Create a ViewModel the first time the system calls an activity's onCreate() method.
         // Re-created activities receive the same MyViewModel instance created by the first activity.
-        BackupViewModel model = new ViewModelProvider(this).get(BackupViewModel.class);
+        model = new ViewModelProvider(this).get(BackupViewModel.class);
         model.getBackupStateLv().observe(this, state -> {
             // TODO: UI側の更新はこちらに記載する．
             // 値が変わったときに呼び出される
@@ -121,14 +125,63 @@ public class BackupViewActivity extends AppCompatActivity{
     }
 
     public void showBackupListNameDialog(CharSequence[] arrayBackupName){
-    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        CharSequence[] dialogCharSequence = new CharSequence[arrayBackupName.length +1];
+        dialogCharSequence[0] = "新規作成";
+        for(int x=0;x< arrayBackupName.length;x++){
+            dialogCharSequence[x+1] = arrayBackupName[x];
+        }
         builder.setTitle("選択してください").setItems(arrayBackupName, new DialogInterface.OnClickListener() {
         @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                if(which ==0){
+                    confirmUploadCloudStorageDialog();
+                }else{
+                    confirmDownloadCloudStorageDialog(dialogCharSequence[which]);
+                }
             }
         });
         builder.create().show();
+    }
+    private boolean confirmUploadCloudStorageDialog(){
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setMessage(/*R.string.dialog_start_game*/
+                "現在のStrageをアップロードします．\n" +
+                "この操作には多量のバケット通信が発生します．")
+            .setPositiveButton(/*R.string.start*/"Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    model.exeS3BackupUpload();
+                }
+            })
+            .setNegativeButton(/*R.string.cancel*/ "No", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                }
+            });
+        // TODO:戻り値いらないかも？
+        builder.show();
+        return true;
+    }
+    private void confirmDownloadCloudStorageDialog(CharSequence cs){
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setMessage(/*R.string.dialog_start_game*/
+                cs+"をダウンロードします．\n" +
+                    "現在のアルバムの状態はリセットされます．\n"+
+                    "この操作には多量のバケット通信が発生します．")
+            .setPositiveButton(/*R.string.start*/"Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    // model.exeS3BackupDownload(cs.toString());
+                    model.exeS3BackupDownload();
+                }
+            })
+            .setNegativeButton(/*R.string.cancel*/ "No", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                }
+            });
+        builder.show();
     }
 
 }

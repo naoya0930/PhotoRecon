@@ -83,7 +83,7 @@ dependencies {
     implementation 'com.amazonaws:aws-android-sdk-mobile-client:2.72.0'
     // apigateway sdk
     implementation fileTree(dir: 'libs', include: '*.jar')
-    implementation files('libs/aws-apigateway-api-sdk-0.1.1.jar')
+    implementation files('libs/aws-apigateway-api-sdk-0.0.1.jar')
 
     //aws こちらを使用すると，現在推奨されないHTTPリクエストを取る実装しか無い．AllowAllHostnameVerifier
     // implementation 'software.amazon.awssdk:core:2.21.33'
@@ -99,7 +99,8 @@ dependencies {
 
     // JSON パース
     implementation 'com.google.code.gson:gson:2.8.6'
-
+    // Http 関連のIO
+    implementation 'commons-io:commons-io:2.4'
 }
 
 

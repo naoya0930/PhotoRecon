@@ -19,13 +19,17 @@ public class BackupState {
         LOGGING_IN,
         HAVE_ACTIVE_TOKEN,
         LAMBDA_CHALLENGING,
-        PROCESSED
+        PROCESSED,
+        BACKUP_UPLOADING,
+        BACKUP_DOWNLOADING,
+        PROCESS_SUCCESSED
     }
     // ここに変更を検知したい変数を置く．
     // トークンの有効期限はAWSSDK側で管理
     // TODO: 外部定義クラスだけど変更検知できるか確認
     private CharSequence[] lambdaResponseBackupList = {};
     public CharSequence[] getLambdaResponseBackupList() {
+
         return lambdaResponseBackupList;
     }
     public void setLambdaResponseBackupList(CharSequence[] l){

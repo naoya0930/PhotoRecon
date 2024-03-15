@@ -10,18 +10,21 @@ public class BackupState {
         this.lambdaResponseBackupList = getLambdaResponseBackupList();
     }
     public BackupState(){
-        this.processState = ProcessState.LOGOUT_WITH_NO_TOKEN;
+        this.processState = ProcessState.INITIATION;
         this.lambdaResponseBackupList = new CharSequence[0];
     }
+    // フロントだけでなく，Viewmodelで処理する状態も考えて，各実行状態のStateを置く．
+    //Viewmodel と Modelの間は，Interfaceで，
+    //ViewとViewmnodelの間は，関数として呼び出す．
     public enum ProcessState{
-        LOGOUT_WITH_NO_TOKEN,
-        LOGOUT_WITH_TOKEN,
+        INITIATION,
+        INITIATION_SUCCESS,
         LOGGING_IN,
-        GETTING_BACKUP_LIST,
-        LAMBDA_CHALLENGING,
-        PROCESSED,
+        LOG_IN_SUCCESS_AND_GETTING_BACKUP_LIST,
+        GET_BACKUP_NAME_LIST,
+        REQUESTING_DOWNLOAD_S3_URL,
+        REQUESTING_UPLOAD_S3_URL,
         BACKUP_UPLOADING,
-
         BACKUP_DOWNLOADING,
         PROCESS_SUCCESSED
     }
@@ -36,8 +39,7 @@ public class BackupState {
     public void setLambdaResponseBackupList(CharSequence[] l){
         this.lambdaResponseBackupList =l;
     }
-    // lambdaResponceが更新されなかったときのためのモニタリング
-    private ProcessState processState= ProcessState.LOGOUT_WITH_NO_TOKEN;
+    private ProcessState processState= ProcessState.INITIATION;
     public ProcessState getProcessState() {
         return processState;
     }

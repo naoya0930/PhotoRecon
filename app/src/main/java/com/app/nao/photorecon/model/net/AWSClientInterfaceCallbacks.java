@@ -11,26 +11,6 @@ public interface AWSClientInterfaceCallbacks {
     Callback<SignInResult> tryLoginCallback();
 
     void reflectLambdaResponseToUI(LambdaResponceBackupList lambdaList);
+    void acceptDownloadURL(String url);
+    void acceptUploadURL(String url);
 }
-//    private Callback<UserStateDetails>() awsInitiationCallback= new Callback<SignInResult>(){
-//    {
-//            @Override
-//            public void onResult(UserStateDetails details) {
-//            }
-//
-//            @Override
-//            public void onError(Exception e) {
-//            }
-//    };
-//    Callback<SignInResult> tryLogninCallback = new Callback<SignInResult>(){
-//            @Override
-//            public void onResult(final SignInResult signInResult) {}
-//            }
-//            @Override
-//            public void onError(Exception e) {
-//            }
-//    };
-    //   public void hookApiGateway() {
-        // TODO: 安全性的にイマイチなので，自分がサブスレッドかチェックする．
-        //ここは自分で書く必要あり．
-// //}}

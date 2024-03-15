@@ -1,10 +1,12 @@
 package com.app.nao.photorecon.ui.backup;
 
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,15 +17,21 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.app.nao.photorecon.R;
+import com.app.nao.photorecon.model.repository.LocalFileUtil;
+import com.app.nao.photorecon.model.usecase.CreateRealmBackup;
 import com.app.nao.photorecon.model.usecase.DeletePhotoFromLocalFile;
 import com.app.nao.photorecon.model.usecase.DeletePhotoFromRealm;
 import com.app.nao.photorecon.ui.album.AlbumViewActivity;
+import com.app.nao.photorecon.ui.util.DateManager;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
 
 
 // TODO: 非常に不安定なので，なにかしら見てあげること
@@ -42,8 +50,6 @@ public class BackupViewActivity extends AppCompatActivity{
     // from viewmdel
     private BackupViewModel model;
     private CharSequence[] ArrayBackupNames;
-
-    // TODO: ここで宣言したらダメなんだっけ？結局Activityのライフサイクルに依存するようになる？
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,24 +71,23 @@ public class BackupViewActivity extends AppCompatActivity{
             inActiveLoadingProgressLayout();
             switch (state.getProcessState()){
 
-                case PROCESSED:
+                case INITIATION:
                     Log.i("app","AWS lambdaリストを表示します．．");
-                    showBackupListNameDialog(state.getLambdaResponseBackupList());
+                    activeLoadingProgressLayout("Activating...");
                     break;
                 case LOGGING_IN:
-                    Log.i("app","AWS configrationの設定とpreferenceの確認ができました．");
+                    Log.i("app","ログインしています．．");
+                    activeLoadingProgressLayout("Login...");
                     break;
-                case GETTING_BACKUP_LIST:
+                case LOG_IN_SUCCESS_AND_GETTING_BACKUP_LIST:
                     Log.i("app","AWS lambdaをフックする準備ができました．");
-                    model.getAWSBackupList();
                     activeLoadingProgressLayout("Getting List...");
+                    // 次のlambdaListgetへ直接移行する．
+                    model.getAWSBackupList();
                     break;
-                case LOGOUT_WITH_TOKEN:
-                    break;
-                case LAMBDA_CHALLENGING:
-                    break;
-                case LOGOUT_WITH_NO_TOKEN:
-                    // model.activityInitiation(this);
+                case GET_BACKUP_NAME_LIST:
+                    inActiveLoadingProgressLayout();
+                    showBackupListNameDialog(state.getLambdaResponseBackupList());
                     break;
             }
         });
@@ -105,7 +110,22 @@ public class BackupViewActivity extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 final Intent intent = new Intent(v.getContext(), SignupViewActivity.class);
-                v.getContext().startActivity(intent);
+                // デバック用に1次利用する．
+                // 権限チェック
+                //JNIとの兼ね合いで，Realmが恐らく見えなくなっている．この潜在的な問題が解決するまで一旦放置するかもしれん
+                // https://github.com/realm/realm-java/issues/7301
+                if (ContextCompat.checkSelfPermission(
+                        v.getContext(), Manifest.permission.MANAGE_EXTERNAL_STORAGE) !=
+                        PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions((Activity) v.getContext(), new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE},1);
+                }else{
+                }
+                //
+
+                CreateRealmBackup createRealmBackup = new CreateRealmBackup();
+                File f = v.getContext().getFilesDir();
+                createRealmBackup.createRealmBackup(new File(f,LocalFileUtil.LOCAL_REALM_BACKUP_DIRECTORY)+"/backup");
+                // v.getContext().startActivity(intent);
             }
         });
         // アクティビティのイニシエーションをする．
@@ -127,14 +147,15 @@ public class BackupViewActivity extends AppCompatActivity{
     public void showBackupListNameDialog(CharSequence[] arrayBackupName){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         CharSequence[] dialogCharSequence = new CharSequence[arrayBackupName.length +1];
-        dialogCharSequence[0] = "新規作成";
+        dialogCharSequence[0] = "現在の状態をバックアップする";
         for(int x=0;x< arrayBackupName.length;x++){
             dialogCharSequence[x+1] = arrayBackupName[x];
         }
-        builder.setTitle("選択してください").setItems(arrayBackupName, new DialogInterface.OnClickListener() {
+        builder.setTitle("選択してください").setItems(dialogCharSequence, new DialogInterface.OnClickListener() {
         @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(which ==0){
+
                     confirmUploadCloudStorageDialog();
                 }else{
                     confirmDownloadCloudStorageDialog(dialogCharSequence[which]);
@@ -146,12 +167,15 @@ public class BackupViewActivity extends AppCompatActivity{
     private boolean confirmUploadCloudStorageDialog(){
         androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
         builder.setMessage(/*R.string.dialog_start_game*/
-                "現在のStrageをアップロードします．\n" +
+                "現在のStorageをアップロードします．\n" +
                 "この操作には多量のバケット通信が発生します．")
             .setPositiveButton(/*R.string.start*/"Yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
-                    model.exeS3BackupUpload();
+                    // URLをアップロード用の要求する
+                    //model.exeS3BackupUpload();
+                    // TODO:ファイルネーム．暫定的にここには，現在の日付時間を入れておく．
+                    model.requestS3UploadURL(DateManager.getLocalDateFormatH().toString());
                 }
             })
             .setNegativeButton(/*R.string.cancel*/ "No", new DialogInterface.OnClickListener() {
@@ -173,7 +197,8 @@ public class BackupViewActivity extends AppCompatActivity{
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
                     // model.exeS3BackupDownload(cs.toString());
-                    model.exeS3BackupDownload();
+                    // ダウンロード用のURLを要求する．
+                    model.requestS3DownloadURL(cs.toString());
                 }
             })
             .setNegativeButton(/*R.string.cancel*/ "No", new DialogInterface.OnClickListener() {

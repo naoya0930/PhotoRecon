@@ -229,7 +229,19 @@ public class AWSClient {
     private final static String REQUEST_API_BACKUP_GET_PATH = "/user/backup/download/url";
     private final static String REQUEST_API_BACKUP_PUSH_PATH = "user/backup/upload/url";
     //アップロードリンクをリクエスト
-    public String requestPushS3Url(String fileName){
+    public void requestPushS3Url(String fileName){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String upload_url = _requestPushS3Url(fileName);
+                if(upload_url!=null) {
+                    // ダウンロードリンクが無い場合にフック
+                    callbackFunc.acceptUploadURL(upload_url);
+                }
+            }
+        }).start();
+    }
+    private String _requestPushS3Url(String fileName){
         // トークン拾い
         Tokens tokens;
         try {
@@ -271,8 +283,20 @@ public class AWSClient {
         }
         return upload_url.getPresignedUrl();
     }
+    public void requestGetS3Url(String fileName){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String download_url = _requestGetS3Url(fileName);
+                if(download_url!=null) {
+                    // ダウンロードリンクが無い場合にフック
+                    callbackFunc.acceptDownloadURL(download_url);
+                }
+            }
+        }).start();
+    }
     // ダウンロードリンクをリクエスト
-    public String requestGetS3Url(String fileName){
+    private String _requestGetS3Url(String fileName){
         Tokens tokens;
         try {
             tokens = awsMobileClient.getTokens();

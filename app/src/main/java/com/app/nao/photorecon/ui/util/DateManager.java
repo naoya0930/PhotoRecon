@@ -13,6 +13,15 @@ public class DateManager {
         return dtf1.format(nowDate);
     }
 
+    public static String getLocalDateFormatH() {
+        LocalDateTime nowDate = LocalDateTime.now();
+        // System.out.println(nowDate); //2020-12-20T13:32:48.293
+
+        DateTimeFormatter dtf1 =
+                DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+        return dtf1.format(nowDate);
+    }
+}
 //        // 現在日時を取得
 //        LocalDateTime nowDate = LocalDateTime.now();
 //       //  System.out.println(nowDate); //2020-12-20T13:32:48.293
@@ -34,4 +43,3 @@ public class DateManager {
 //                DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 //        String formatNowDate = dtf3.format(nowDate);
 //        // System.out.println(formatNowDate); // 202012201332
-}

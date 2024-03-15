@@ -5,6 +5,7 @@ import android.util.Log;
 
 import org.bson.types.ObjectId;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ import io.realm.annotations.PrimaryKey;
 public abstract class RealmDAO<T extends RealmObject>{
     protected RealmConfiguration inmemoryRealmConf =
         new RealmConfiguration.Builder()
-            .name("PhotoReconApp")
+            .name("PhotoReconApp.realm")
             .allowQueriesOnUiThread(true)
             .allowWritesOnUiThread(true)
             .compactOnLaunch()
@@ -31,11 +32,12 @@ public abstract class RealmDAO<T extends RealmObject>{
             .build();
     protected RealmConfiguration realmConf =
         new RealmConfiguration.Builder()
-            .name("PhotoReconApp")
+            .name("PhotoReconApp.realm")
             .allowQueriesOnUiThread(true)
             .allowWritesOnUiThread(true)
             .compactOnLaunch()
             .build();
+
     protected void create_entity(RealmConfiguration conf,T obj){
         Realm.setDefaultConfiguration(conf);
         Realm realm_instance = Realm.getDefaultInstance();
@@ -114,5 +116,4 @@ public abstract class RealmDAO<T extends RealmObject>{
         }
         return primaryKeyField;
     }
-
 }
